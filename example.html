@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<meta name='description' content='Made using Stata2D3 (robertgrantstats.co.uk/software)'>
+	<title>My awesome graph</title>
+	<script type='text/javascript' src='d3.v3.min.js'></script>
+
+	<style>
+		body { 
+			font-family: 'helvetica'; 
+		}
+		path { 
+			stroke: steelblue;
+			stroke-width: 1;
+			fill: none;
+		}
+		.axis path, .axis line {
+			fill: none;
+			stroke: grey;
+			stroke-width: 1;
+			shape-rendering: crispEdges;
+		     }
+		.legend {
+			font-size: 16px;
+			font-weight: bold;
+			text-anchor: middle;
+		}
+		button { 
+			margin: 0 7px 0 0;
+			background-color: #f5f5f5;
+			border: 1px solid #dedede;
+			border-top: 1px solid #eee;
+			border-left: 1px solid #eee;
+			font-size: 12px;
+			line-height: 130%;
+			text-decoration: none;
+			font-weight: bold;
+			color: #565656;
+			cursor: pointer;
+		}
+		.dot {
+			fill: rgba(255,255,255,0);
+			stroke: steelblue;
+		}
+		.area {
+			stroke: none;
+			fill: steelblue;
+			fill-opacity: .2;
+		}
+		.cross {
+			stroke: none;
+			fill: blue;
+			fill-opacity: .7;
+		}
+		.diamond {
+			stroke: none;
+			fill: green;
+			fill-opacity: .7;
+		}
+		.square{
+			stroke: none;
+			fill: yellow;
+			fill-opacity: .7;
+		}
+		.triangle-down{
+			stroke: none;
+			fill: blueviolet;
+			fill-opacity: .7;
+		}
+		.triangle-up{
+			stroke: none;
+			fill: darkred;
+			fill-opacity: .7;
+		}
+		.bubble{
+			fill-opacity: .3;
+		}
+		.bar{
+			stroke: none;
+			fill: steelblue;
+		}
+		div.tooltip {
+			position: absolute;
+			text-align: center;
+			width: 60px;
+			height: 28px;
+			padding: 2px;
+			font: 12px sans-serif;
+			background: lightsteelblue;
+			border: 0px;
+			border-radius: 8px;
+			pointer-events: none;
+		}
+
+	</style>
+
+</head>
+
+<body>
+<script type='text/javascript'>
+	var margin = {top: 30, left: 80, right: 400, bottom: 70},
+		width = 900 - margin.left - margin.right,
+		height = 300 - margin.top - margin.bottom,
+		axisLabelSpace = 50,
+		legendSpace = 100,
+		x = d3.scale.linear().range([0, width]),
+		y = d3.scale.linear().range([height, 0]),
+		xAxis = d3.svg.axis().scale(x).orient('bottom').ticks(5),
+		yAxis = d3.svg.axis().scale(y).orient('left').ticks(5);
+
+	var domainPadding = 0.2;
+
+	var makeline = d3.svg.line()
+		.x(function(d) { return x(d.xvar); })
+		.y(function(d) { return y(d.yvar); });
+	svg = d3.select('body')
+		.append('svg')
+			.attr('width', width + margin.left + margin.right)
+			.attr('height', height + margin.top + margin.bottom)
+		.append('g')
+			.attr('transform',
+				'translate(' + margin.left + ',' + margin.top + ')');
+
+	var div = d3.select('body').append('div')
+		.attr('class', 'tooltip')
+		.style('opacity', 0);
+
+	var linedata = [
+			{'twoway': 'line1', 'xvar': 1, 'yvar': 6.679999828338623, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 2, 'yvar': 6.820000171661377, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 3, 'yvar': 5.28000020980835, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 4, 'yvar': 3.490000009536743, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 5, 'yvar': 3.079999923706055, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 6, 'yvar': 4.440000057220459, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 7, 'yvar': 6.309999942779541, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 8, 'yvar': 6.980000019073486, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 9, 'yvar': 5.820000171661377, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line1', 'xvar': 10, 'yvar': 3.910000085830689, 
+			'col': 'rgba(70,130,180,.6)', 'index': 0, 'width': 1},
+			{'twoway': 'line2', 'xvar': 1, 'yvar': 5, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 2, 'yvar': 3.25, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 3, 'yvar': 2, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 4, 'yvar': 1.25, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 5, 'yvar': 1, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 6, 'yvar': 1.25, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 7, 'yvar': 2, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 8, 'yvar': 3.25, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 9, 'yvar': 5, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			{'twoway': 'line2', 'xvar': 10, 'yvar': 7.25, 
+			'col': 'rgba(144,53,59,.2)', 'index': 1, 'width': 2},
+			];
+
+	var scatterdata = [
+			{'twoway': 'dots3', 'xvar': 1, 'yvar': 5, 
+			'col': 'rgba(85,117,47,1)', 'index': 0, 
+			'mo': 'John'},
+			{'twoway': 'dots3', 'xvar': 2, 'yvar': 6, 
+			'col': 'rgba(85,117,47,1)', 'index': 0, 
+			'mo': 'George'},
+			{'twoway': 'dots4', 'xvar': 3, 'yvar': 6, 
+			'col': 'rgba(227,126,0,1)', 'index': 1, 
+			'mo': 'Paul'},
+			{'twoway': 'dots4', 'xvar': 4, 'yvar': 7, 
+			'col': 'rgba(227,126,0,1)', 'index': 1, 
+			'mo': 'Ringo'},
+			];
+
+	var lineminx = d3.min(linedata, function(d) { return d.xvar; });
+	var linemaxx = d3.max(linedata, function(d) { return d.xvar; });
+	var lineminy = d3.min(linedata, function(d) { return d.yvar; });
+	var linemaxy = d3.max(linedata, function(d) { return d.yvar; });
+	var scatterminx = d3.min(scatterdata, function(d) { return d.xvar; });
+	var scattermaxx = d3.max(scatterdata, function(d) { return d.xvar; });
+	var scatterminy = d3.min(scatterdata, function(d) { return d.yvar; });
+	var scattermaxy = d3.max(scatterdata, function(d) { return d.yvar; });
+	var allminx = Math.min(lineminx,scatterminx) - domainPadding * (Math.max(linemaxx,scattermaxx)-Math.min(lineminx,scatterminx));
+	var allmaxx = Math.max(linemaxx,scattermaxx) + domainPadding * (Math.max(linemaxx,scattermaxx)-Math.min(lineminx,scatterminx));
+	var allminy = Math.min(lineminy,scatterminy) - domainPadding * (Math.max(linemaxy,scattermaxy)-Math.min(lineminy,scatterminy));
+	var allmaxy = Math.max(linemaxy,scattermaxy) + domainPadding * (Math.max(linemaxy,scattermaxy)-Math.min(lineminy,scatterminy));
+
+	x.domain([allminx,allmaxx]);
+	y.domain([allminy,allmaxy]);
+
+	var linedataNest = d3.nest()
+		.key(function(d) {return d.twoway;})
+		.entries(linedata);
+
+	var linelegendSpace = width/linedataNest.length;
+
+	linedataNest.forEach(function(d,i) { 
+		svg.append('path')
+		.attr('class', 'line')
+		.style('stroke', function() {
+			return linedataNest[i].values[i].col; })
+		.style('stroke-width', function() {
+			return linedataNest[i].values[i].width; })
+		.attr('id', 'line'+i)
+		.attr('d', makeline(d.values));
+
+	svg.append('text')
+		.attr('x', width+(legendSpace/2)+i*legendSpace)
+		.attr('y', legendSpace/2)
+		.attr('class', 'legend')
+		.style('fill', function() {
+			return linedataNest[i].values[i].col; })
+		.on('click', function(){
+			var active = d.active ? false : true,
+				newOpacity = active ? 0 : 1;
+			d3.select('#line'+i)
+				.transition().duration(600)
+				.style('opacity', newOpacity);
+			d.active = active;
+		})
+		.text(d.key);
+	});
+
+	svg.selectAll('dot')
+		.data(scatterdata)
+		.enter().append('circle')
+			.attr('r', 3.5)
+			.attr('id', function(d,i) {
+				return 'scatter'+d.index;})
+			.style('stroke', function(d,i) {
+				return d.color = d.col; })
+			.style('fill','rgba(255,255,255,0)')
+			.attr('cx', function(d) { return x(d.xvar); })
+			.attr('cy', function(d) { return y(d.yvar); })
+			.on('mouseover', function(d){
+				div.transition()
+					.duration(200)
+					.style('opacity',.9);
+				div.html(d.mo)
+					.style('left',(d3.event.pageX) + 'px')
+					.style('top',(d3.event.pageY - 28) + 'px');
+			})
+			.on('mouseout', function(d){
+				div.transition()
+					.duration(500)
+					.style('opacity', 0);
+			})
+			;
+	var scatterdataNest = d3.nest()
+		.key(function(d) {return d.twoway;})
+		.entries(scatterdata);
+
+	scatterdataNest.forEach(function(d,i) {
+		svg.append('text')
+			.attr('x', width+(legendSpace/2)+i*legendSpace)
+			.attr('y', legendSpace)
+			.attr('class', 'legend')
+			.style('fill', function() {
+				return scatterdataNest[i].values[0].col; })
+			.on('click', function(){
+				var active = d.active ? false : true,
+					newOpacity = active ? 0 : 1;
+				d3.selectAll('#scatter'+i)
+					.transition().duration(600)
+					.style('opacity', newOpacity);
+				d.active = active;
+			})
+		.text(d.key);
+	});
+
+	svg.append('g')
+		.attr('class', 'x axis')
+		.attr('transform', 'translate(0,' + height + ')')
+		.call(xAxis);
+
+	svg.append('text')
+		.attr('transform','translate('+(width/2)+','+(height+axisLabelSpace)+')')
+		.style('text-anchor','middle')
+		.text('A variable');
+
+	svg.append('g')
+		.attr('class', 'y axis')
+		.call(yAxis);
+
+	svg.append('text')
+		.attr('transform','rotate(-90)')
+		.attr('x',0-(height/2))
+		.attr('y',0-axisLabelSpace)
+		.attr('dy','1em')
+		.style('text-anchor','middle')
+		.text('Another variable');
+
+</script>
+</body>

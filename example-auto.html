@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<meta name='description' content='Made using Stata2D3 (robertgrantstats.co.uk/software)'>
+	<title>1978 cars, in D3</title>
+	<script type='text/javascript' src='d3.v3.min.js'></script>
+
+	<style>
+		body { 
+			font-family: 'helvetica'; 
+		}
+		path { 
+			stroke: steelblue;
+			stroke-width: 1;
+			fill: none;
+		}
+		.axis path, .axis line {
+			fill: none;
+			stroke: grey;
+			stroke-width: 1;
+			shape-rendering: crispEdges;
+		     }
+		.legend {
+			font-size: 16px;
+			font-weight: bold;
+			text-anchor: middle;
+		}
+		button { 
+			margin: 0 7px 0 0;
+			background-color: #f5f5f5;
+			border: 1px solid #dedede;
+			border-top: 1px solid #eee;
+			border-left: 1px solid #eee;
+			font-size: 12px;
+			line-height: 130%;
+			text-decoration: none;
+			font-weight: bold;
+			color: #565656;
+			cursor: pointer;
+		}
+		.dot {
+			fill: rgba(255,255,255,0);
+			stroke: steelblue;
+		}
+		.area {
+			stroke: none;
+			fill: steelblue;
+			fill-opacity: .2;
+		}
+		.cross {
+			stroke: none;
+			fill: blue;
+			fill-opacity: .7;
+		}
+		.diamond {
+			stroke: none;
+			fill: green;
+			fill-opacity: .7;
+		}
+		.square{
+			stroke: none;
+			fill: yellow;
+			fill-opacity: .7;
+		}
+		.triangle-down{
+			stroke: none;
+			fill: blueviolet;
+			fill-opacity: .7;
+		}
+		.triangle-up{
+			stroke: none;
+			fill: darkred;
+			fill-opacity: .7;
+		}
+		.bubble{
+			fill-opacity: .3;
+		}
+		.bar{
+			stroke: none;
+			fill: steelblue;
+		}
+		div.tooltip {
+			position: absolute;
+			text-align: center;
+			width: 100px;
+			height: 48px;
+			padding: 2px;
+			font: 12px sans-serif;
+			background: lightsteelblue;
+			border: 0px;
+			border-radius: 8px;
+			pointer-events: none;
+		}
+
+	</style>
+
+</head>
+
+<body>
+<script type='text/javascript'>
+	var margin = {top: 30, left: 80, right: 400, bottom: 70},
+		width = 900 - margin.left - margin.right,
+		height = 300 - margin.top - margin.bottom,
+		axisLabelSpace = 50,
+		legendSpace = 100,
+		x = d3.scale.linear().range([0, width]),
+		y = d3.scale.linear().range([height, 0]),
+		xAxis = d3.svg.axis().scale(x).orient('bottom').ticks(5),
+		yAxis = d3.svg.axis().scale(y).orient('left').ticks(5);
+
+	var domainPadding = 0.2;
+
+	var makeline = d3.svg.line()
+		.x(function(d) { return x(d.xvar); })
+		.y(function(d) { return y(d.yvar); });
+	svg = d3.select('body')
+		.append('svg')
+			.attr('width', width + margin.left + margin.right)
+			.attr('height', height + margin.top + margin.bottom)
+		.append('g')
+			.attr('transform',
+				'translate(' + margin.left + ',' + margin.top + ')');
+
+	var div = d3.select('body').append('div')
+		.attr('class', 'tooltip')
+		.style('opacity', 0);
+
+	var linedata = [
+			{'twoway': 'Graph 1', 'xvar': 12, 'yvar': 13594, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 12, 'yvar': 11497, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 14, 'yvar': 6303, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 14, 'yvar': 12990, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 14, 'yvar': 5379, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 14, 'yvar': 11385, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 14, 'yvar': 13466, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 14, 'yvar': 14500, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 15, 'yvar': 6165, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 15, 'yvar': 7827, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 16, 'yvar': 5705, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 16, 'yvar': 10372, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 16, 'yvar': 10371, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 16, 'yvar': 5886, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 17, 'yvar': 9690, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 17, 'yvar': 6342, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 17, 'yvar': 4749, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 17, 'yvar': 11995, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 4934, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 4516, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 4060, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 5899, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 5788, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 5719, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 4890, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 5798, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 18, 'yvar': 4010, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 5172, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 4733, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 3955, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 5222, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 4723, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 4181, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 4082, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 19, 'yvar': 4424, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 20, 'yvar': 3291, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 20, 'yvar': 4816, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 20, 'yvar': 5189, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 21, 'yvar': 4296, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 21, 'yvar': 8814, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 21, 'yvar': 15906, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 21, 'yvar': 4187, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 21, 'yvar': 8129, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 22, 'yvar': 3829, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 22, 'yvar': 5104, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 22, 'yvar': 4504, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 22, 'yvar': 3799, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 22, 'yvar': 4099, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 23, 'yvar': 6229, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 23, 'yvar': 7140, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 23, 'yvar': 6295, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 24, 'yvar': 3667, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 24, 'yvar': 4172, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 24, 'yvar': 5079, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 24, 'yvar': 4195, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 25, 'yvar': 9735, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 25, 'yvar': 6850, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 25, 'yvar': 5799, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 25, 'yvar': 4697, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 25, 'yvar': 4482, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 26, 'yvar': 4453, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 26, 'yvar': 3895, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 26, 'yvar': 6486, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 28, 'yvar': 4499, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 28, 'yvar': 4647, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 28, 'yvar': 4389, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 29, 'yvar': 3299, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 30, 'yvar': 3995, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 30, 'yvar': 3984, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 31, 'yvar': 3748, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 34, 'yvar': 4425, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 35, 'yvar': 3798, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 35, 'yvar': 4589, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			{'twoway': 'Graph 1', 'xvar': 41, 'yvar': 5397, 
+			'col': 'rgba(26,71,111,1)', 'index': 0, 'width': 1},
+			];
+
+	var scatterdata = [
+			{'twoway': 'Graph 2', 'xvar': 12, 'yvar': 13594, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Linc. Mark V<br>USD 13,594<br>12 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 12, 'yvar': 11497, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Linc. Continental<br>USD 11,497<br>12 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 14, 'yvar': 6303, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Merc. XR-7<br>USD 6,303<br>14 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 14, 'yvar': 12990, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Peugeot 604<br>USD 12,990<br>14 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 14, 'yvar': 5379, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Merc. Cougar<br>USD 5,379<br>14 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 14, 'yvar': 11385, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Cad. Deville<br>USD 11,385<br>14 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 14, 'yvar': 13466, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Linc. Versailles<br>USD 13,466<br>14 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 14, 'yvar': 14500, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Cad. Eldorado<br>USD 14,500<br>14 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 15, 'yvar': 6165, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Merc. Marquis<br>USD 6,165<br>15 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 15, 'yvar': 7827, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick Electra<br>USD 7,827<br>15 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 16, 'yvar': 5705, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Chev. Impala<br>USD 5,705<br>16 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 16, 'yvar': 10372, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick Riviera<br>USD 10,372<br>16 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 16, 'yvar': 10371, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds Toronado<br>USD 10,371<br>16 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 16, 'yvar': 5886, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Dodge Magnum<br>USD 5,886<br>16 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 17, 'yvar': 9690, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Audi 5000<br>USD 9,690<br>17 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 17, 'yvar': 6342, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Dodge St. Regis<br>USD 6,342<br>17 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 17, 'yvar': 4749, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'AMC Pacer<br>USD 4,749<br>17 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 17, 'yvar': 11995, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Volvo 260<br>USD 11,995<br>17 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 4934, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Pont. Firebird<br>USD 4,934<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 4516, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Merc. Monarch<br>USD 4,516<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 4060, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Plym. Volare<br>USD 4,060<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 5899, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Toyota Celica<br>USD 5,899<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 5788, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick LeSabre<br>USD 5,788<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 5719, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Toyota Corona<br>USD 5,719<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 4890, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds Delta 88<br>USD 4,890<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 5798, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Pont. Catalina<br>USD 5,798<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 18, 'yvar': 4010, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Dodge Diplomat<br>USD 4,010<br>18 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 5172, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds Cutl Supr<br>USD 5,172<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 4733, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds Cutlass<br>USD 4,733<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 3955, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Chev. Nova<br>USD 3,955<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 5222, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Pont. Grand Prix<br>USD 5,222<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 4723, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Pont. Le Mans<br>USD 4,723<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 4181, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds Omega<br>USD 4,181<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 4082, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick Skylark<br>USD 4,082<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 19, 'yvar': 4424, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Pont. Phoenix<br>USD 4,424<br>19 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 20, 'yvar': 3291, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Merc. Zephyr<br>USD 3,291<br>20 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 20, 'yvar': 4816, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick Century<br>USD 4,816<br>20 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 20, 'yvar': 5189, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick Regal<br>USD 5,189<br>20 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 21, 'yvar': 4296, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Fiat Strada<br>USD 4,296<br>21 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 21, 'yvar': 8814, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds 98<br>USD 8,814<br>21 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 21, 'yvar': 15906, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Cad. Seville<br>USD 15,906<br>21 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 21, 'yvar': 4187, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Ford Mustang<br>USD 4,187<br>21 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 21, 'yvar': 8129, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Datsun 810<br>USD 8,129<br>21 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 22, 'yvar': 3829, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Merc. Bobcat<br>USD 3,829<br>22 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 22, 'yvar': 5104, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Chev. Monte Carlo<br>USD 5,104<br>22 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 22, 'yvar': 4504, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Chev. Malibu<br>USD 4,504<br>22 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 22, 'yvar': 3799, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'AMC Spirit<br>USD 3,799<br>22 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 22, 'yvar': 4099, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'AMC Concord<br>USD 4,099<br>22 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 23, 'yvar': 6229, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Datsun 200<br>USD 6,229<br>23 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 23, 'yvar': 7140, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'VW Dasher<br>USD 7,140<br>23 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 23, 'yvar': 6295, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Audi Fox<br>USD 6,295<br>23 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 24, 'yvar': 3667, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Chev. Monza<br>USD 3,667<br>24 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 24, 'yvar': 4172, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Pont. Sunbird<br>USD 4,172<br>24 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 24, 'yvar': 5079, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Datsun 510<br>USD 5,079<br>24 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 24, 'yvar': 4195, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Olds Starfire<br>USD 4,195<br>24 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 25, 'yvar': 9735, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'BMW 320i<br>USD 9,735<br>25 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 25, 'yvar': 6850, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'VW Scirocco<br>USD 6,850<br>25 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 25, 'yvar': 5799, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Honda Accord<br>USD 5,799<br>25 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 25, 'yvar': 4697, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'VW Rabbit<br>USD 4,697<br>25 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 25, 'yvar': 4482, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Plym. Horizon<br>USD 4,482<br>25 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 26, 'yvar': 4453, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Buick Opel<br>USD 4,453<br>26 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 26, 'yvar': 3895, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Renault Le Car<br>USD 3,895<br>26 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 26, 'yvar': 6486, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Plym. Sapporo<br>USD 6,486<br>26 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 28, 'yvar': 4499, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Honda Civic<br>USD 4,499<br>28 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 28, 'yvar': 4647, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Plym. Arrow<br>USD 4,647<br>28 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 28, 'yvar': 4389, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Ford Fiesta<br>USD 4,389<br>28 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 29, 'yvar': 3299, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Chev. Chevette<br>USD 3,299<br>29 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 30, 'yvar': 3995, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Mazda GLC<br>USD 3,995<br>30 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 30, 'yvar': 3984, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Dodge Colt<br>USD 3,984<br>30 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 31, 'yvar': 3748, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Toyota Corolla<br>USD 3,748<br>31 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 34, 'yvar': 4425, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Plym. Champ<br>USD 4,425<br>34 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 35, 'yvar': 3798, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Subaru<br>USD 3,798<br>35 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 35, 'yvar': 4589, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'Datsun 210<br>USD 4,589<br>35 MPG'},
+			{'twoway': 'Graph 2', 'xvar': 41, 'yvar': 5397, 
+			'col': 'rgba(144,53,59,1)', 'index': 0, 
+			'mo': 'VW Diesel<br>USD 5,397<br>41 MPG'},
+			];
+
+	var lineminx = d3.min(linedata, function(d) { return d.xvar; });
+	var linemaxx = d3.max(linedata, function(d) { return d.xvar; });
+	var lineminy = d3.min(linedata, function(d) { return d.yvar; });
+	var linemaxy = d3.max(linedata, function(d) { return d.yvar; });
+	var scatterminx = d3.min(scatterdata, function(d) { return d.xvar; });
+	var scattermaxx = d3.max(scatterdata, function(d) { return d.xvar; });
+	var scatterminy = d3.min(scatterdata, function(d) { return d.yvar; });
+	var scattermaxy = d3.max(scatterdata, function(d) { return d.yvar; });
+	var allminx = Math.min(lineminx,scatterminx) - domainPadding * (Math.max(linemaxx,scattermaxx)-Math.min(lineminx,scatterminx));
+	var allmaxx = Math.max(linemaxx,scattermaxx) + domainPadding * (Math.max(linemaxx,scattermaxx)-Math.min(lineminx,scatterminx));
+	var allminy = Math.min(lineminy,scatterminy) - domainPadding * (Math.max(linemaxy,scattermaxy)-Math.min(lineminy,scatterminy));
+	var allmaxy = Math.max(linemaxy,scattermaxy) + domainPadding * (Math.max(linemaxy,scattermaxy)-Math.min(lineminy,scatterminy));
+
+	x.domain([allminx,allmaxx]);
+	y.domain([allminy,allmaxy]);
+
+	var linedataNest = d3.nest()
+		.key(function(d) {return d.twoway;})
+		.entries(linedata);
+
+	var linelegendSpace = width/linedataNest.length;
+
+	linedataNest.forEach(function(d,i) { 
+		svg.append('path')
+		.attr('class', 'line')
+		.style('stroke', function() {
+			return linedataNest[i].values[i].col; })
+		.style('stroke-width', function() {
+			return linedataNest[i].values[i].width; })
+		.attr('id', 'line'+i)
+		.attr('d', makeline(d.values));
+
+	svg.append('text')
+		.attr('x', width+(legendSpace/2)+i*legendSpace)
+		.attr('y', legendSpace/2)
+		.attr('class', 'legend')
+		.style('fill', function() {
+			return linedataNest[i].values[i].col; })
+		.on('click', function(){
+			var active = d.active ? false : true,
+				newOpacity = active ? 0 : 1;
+			d3.select('#line'+i)
+				.transition().duration(600)
+				.style('opacity', newOpacity);
+			d.active = active;
+		})
+		.text(d.key);
+	});
+
+	svg.selectAll('dot')
+		.data(scatterdata)
+		.enter().append('circle')
+			.attr('r', 3.5)
+			.attr('id', function(d,i) {
+				return 'scatter'+d.index;})
+			.style('stroke', function(d,i) {
+				return d.color = d.col; })
+			.style('fill','rgba(255,255,255,0)')
+			.attr('cx', function(d) { return x(d.xvar); })
+			.attr('cy', function(d) { return y(d.yvar); })
+			.on('mouseover', function(d){
+				div.transition()
+					.duration(200)
+					.style('opacity',.9);
+				div.html(d.mo)
+					.style('left',(d3.event.pageX) + 'px')
+					.style('top',(d3.event.pageY - 28) + 'px');
+			})
+			.on('mouseout', function(d){
+				div.transition()
+					.duration(500)
+					.style('opacity', 0);
+			})
+			;
+	var scatterdataNest = d3.nest()
+		.key(function(d) {return d.twoway;})
+		.entries(scatterdata);
+
+	scatterdataNest.forEach(function(d,i) {
+		svg.append('text')
+			.attr('x', width+(legendSpace/2)+i*legendSpace)
+			.attr('y', legendSpace)
+			.attr('class', 'legend')
+			.style('fill', function() {
+				return scatterdataNest[i].values[0].col; })
+			.on('click', function(){
+				var active = d.active ? false : true,
+					newOpacity = active ? 0 : 1;
+				d3.selectAll('#scatter'+i)
+					.transition().duration(600)
+					.style('opacity', newOpacity);
+				d.active = active;
+			})
+		.text(d.key);
+	});
+
+	svg.append('g')
+		.attr('class', 'x axis')
+		.attr('transform', 'translate(0,' + height + ')')
+		.call(xAxis);
+
+	svg.append('text')
+		.attr('transform','translate('+(width/2)+','+(height+axisLabelSpace)+')')
+		.style('text-anchor','middle')
+		.text('mpg');
+
+	svg.append('g')
+		.attr('class', 'y axis')
+		.call(yAxis);
+
+	svg.append('text')
+		.attr('transform','rotate(-90)')
+		.attr('x',0-(height/2))
+		.attr('y',0-axisLabelSpace)
+		.attr('dy','1em')
+		.style('text-anchor','middle')
+		.text('price');
+
+</script>
+</body>
