@@ -2,6 +2,8 @@
 
 // add ids
 
+// add Groups variable/matrix
+
 /* add classes: xaxis, yaxis, xtitle, ytitle, xtick, ytick, xlabel, ylabel, gridline, 
 				line, area, marker, markerlabel, rspike, 
 				rcapupper, rcaplower
@@ -9,10 +11,7 @@
 
 /* add comment block containing Stata code that would read the coordinates of the data in:
 		both the pixels and the original variable values, also the pixels for the plotregion
-		
-	add option to allocate different classes to markers and lines depending on their color
-	add option to allocate different classes to markers and lines, given the number of 
-		observations in each superimposed graph
+	add option to allocate different classes based on a variable, or possibly matrix
 */
 
 /* we have to assume:
@@ -22,21 +21,20 @@
 		linear scales only
 */
 
-//cd "~/git/stata-svg"
 
 capture program drop svgtag
 program define svgtag, rclass
-syntax anything [, Outputfile(string) Groups(namelist, min=1) Replace Metadata]
+syntax anything [, Outputfile(string) Replace Metadata]
 args inputfile
 
 
 //arguments:
 if `"`inputfile'"'=="" {
-	dis as error "You must specify an input file"
+	dis as error "svgtag error: You must specify an input file"
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="" {
-	dis as error "You must specify either an output filename or the replace option"
+	dis as error "svgtag error: You must specify either an output filename or the replace option"
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="replace" {
@@ -47,7 +45,7 @@ if `"`outputfile'"'=="" & "`replace'"=="replace" {
 // check the inputfile exists
 confirm file `"`inputfile'"'
 
-// ######################## check the Groups matrix exists
+// ######################## check the Groups variable/matrix exists
 
 
 
@@ -142,20 +140,37 @@ while `"`readline'"'!="</svg>" {
 	if substr(`"`readline'"',2,5)=="<line" {
 		local x1pos1=strpos(`"`readline'"',"x1=")+4
 		local x1pos2=strpos(`"`readline'"',"y1=")-1
-		local y1pos1=strpos(`"`readline'"',"y1=")+3
+		local y1pos1=strpos(`"`readline'"',"y1=")+4
 		local y1pos2=strpos(`"`readline'"',"x2=")-1
-		local x2pos1=strpos(`"`readline'"',"x2=")+3
+		local x2pos1=strpos(`"`readline'"',"x2=")+4
 		local x2pos2=strpos(`"`readline'"',"y2=")-1
-		local y2pos1=strpos(`"`readline'"',"y2=")+3
+		local y2pos1=strpos(`"`readline'"',"y2=")+4
 		local y2pos2=strpos(`"`readline'"',"style=")-1	
-		local tempx1=substr(`"`readline'"',`x1pos1',`x1pos2'-`x1pos1'-1)
-		dis "On line `linecount', I found x1 = "
-		dis `"`tempx1'"'
+		local x1=substr(`"`readline'"',`x1pos1',`x1pos2'-`x1pos1'-1)
+		local x2=substr(`"`readline'"',`x2pos1',`x2pos2'-`x2pos1'-1)
+		local y1=substr(`"`readline'"',`y1pos1',`y1pos2'-`y1pos1'-1)
+		local y2=substr(`"`readline'"',`y2pos1',`y2pos2'-`y2pos1'-1)
+		dis "On line `linecount', I found y2 = "
+		dis `"`y2'"'
 	}
-
 	// does it lie on the plotregion boundary? it's an axis
+	if `x1'==`returnprx' & `x2'==`returnprx' {
+		// allocate class=y-axis
+	}
+	local pry2=`returnpry'+`returnprheight'
+	if `y1'==`pry2' & `y2'==`pry2' {
+		// allocate class=x-axis
+	}
+	
 	// does it touch the plotregion boundary at one end? it's a tick
-	// is it inside the plotregion? it's a line or a gridline
+	if (`x1'==`returnprx' & `x1'>`x2') | (`x2'==`returnprx' & `x1'<`x2') {
+		// allocate class = y-tick
+	}
+	if (`y1'==`pry2' & `y1'<`y2') | (`y2'==`pry2' & `y1'>`y2') {
+		// allocate class = x-tick
+	}
+	
+	// is it inside the plotregion? it's a line or a gridline (we forbid gridlines at present)
 	// store it with class and consecutive id
 	// is it a <text?
 	// is it between prx and grx, or pry and gry?

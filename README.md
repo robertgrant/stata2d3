@@ -32,7 +32,11 @@ Stata2D3 aims to get as close as possible to one monolithic program to make inte
 Clearly, there are a gazillion ways you can make a Stata graph, so there are limitations on what you can feed into it. There are also a frazillion ways you can use interactivity, so we just supply the most common ones and leave it to you to tweak the resulting combination of SVG, HTML and JavaScript. To describe each of these in turn:
 ### Limitations on the Stata graphs
 * All graphs must have axes, even if they are invisible
+* Axes may not be inside the plotregion (a horizontal axis at zero in the middle of the graph, for example). You can add them later but any line inside the plotregion might be misinterpreted as data
+* Surely you wouldn't make a graph with two y-axes. Would you? Well, don't do it here.
 * At present, we only deal with circular marker symbols. You can output other shapes and they will be carried through, but we can't apply interactivity to them (yet).
+* At present, we don't allow grid lines, but we intend to add them
+* linear scales only (because we read the axis labels to get a data-to-pixel conversion); this could be extended to log scales in future
 
 ### Limitations on the D3 interactivity
 * We are aiming to have these for September London conference:
