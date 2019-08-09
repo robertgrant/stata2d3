@@ -119,6 +119,8 @@ while `"`readline'"'!="</svg>" {
 		local returnprheight=substr(`"`readline'"',`heightpos1',`heightpos2'-`heightpos1'-1)
 		local plotregion1=substr(`"`readline'"',1,`heightpos2')
 		local plotregion2=substr(`"`readline'"',`heightpos2'+1,.)
+		local pry2=`returnpry'+`returnprheight'
+		local prx2=`returnprx'+`returnprwidth'
 		file write `fo' `"`plotregion1' class="plotregion" `plotregion2'"' _n
 		local writeverbatim=0
 		local ++rectcount
@@ -150,32 +152,36 @@ while `"`readline'"'!="</svg>" {
 		local x2=substr(`"`readline'"',`x2pos1',`x2pos2'-`x2pos1'-1)
 		local y1=substr(`"`readline'"',`y1pos1',`y1pos2'-`y1pos1'-1)
 		local y2=substr(`"`readline'"',`y2pos1',`y2pos2'-`y2pos1'-1)
-		dis "On line `linecount', I found y2 = "
-		dis `"`y2'"'
+		local stylepos1=strpos(`"`readline'"',"style=")
+		local line1=substr(`"`readline'"',1,`stylepos1'-1)
+		local line2=substr(`"`readline'"',`stylepos1',.)
+		local ++lineecount 
+		// ****** do we count ALL lines, or just those that represent data?
+		local writeverbatim=0
 	}
 	// does it lie on the plotregion boundary? it's an axis
 	if `x1'==`returnprx' & `x2'==`returnprx' {
-		// allocate class=y-axis
+		file write `fo' `"`line1' class="y-axis" id="line`lineecount'" `line2'"' _n
 	}
-	local pry2=`returnpry'+`returnprheight'
 	if `y1'==`pry2' & `y2'==`pry2' {
-		// allocate class=x-axis
+		file write `fo' `"`line1' class="x-axis" id="line`lineecount'" `line2'"' _n
 	}
 	
 	// does it touch the plotregion boundary at one end? it's a tick
 	if (`x1'==`returnprx' & `x1'>`x2') | (`x2'==`returnprx' & `x1'<`x2') {
-		// allocate class = y-tick
+		file write `fo' `"`line1' class="y-tick" id="line`lineecount'" `line2'"' _n
 	}
 	if (`y1'==`pry2' & `y1'<`y2') | (`y2'==`pry2' & `y1'>`y2') {
-		// allocate class = x-tick
+		file write `fo' `"`line1' class="x-tick" id="line`lineecount'" `line2'"' _n
 	}
 	
 	// is it inside the plotregion? it's a line or a gridline (we forbid gridlines at present)
-	// store it with class and consecutive id
+	// ******* we only check the x dimension. surely that's enough?
+	if (`x1'>`returnprx' & `x1'<`prx2' & `x2'>`returnprx' & `x2'<`prx2') {
+		file write `fo' `"`line1' class="line" id="line`lineecount'" `line2'"' _n
+	} 
 	// is it a <text?
 	// is it between prx and grx, or pry and gry?
-	// is its location x-axis or y-axis? (what about double y-axes?)
-	// store it with class and consecutive id
 	
 		
 	
