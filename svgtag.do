@@ -1,25 +1,35 @@
 // parse and tag Stata SVG files
 
-// add ids
-
-// add Groups variable/matrix
-
-/* add classes: xaxis, yaxis, xtitle, ytitle, xtick, ytick, xlabel, ylabel, gridline, 
-				line, area, marker, markerlabel, rspike, 
-				rcapupper, rcaplower
+/* To do:
+	add path ids
+	add groups variable
 */
 
-/* add comment block containing Stata code that would read the coordinates of the data in:
-		both the pixels and the original variable values, also the pixels for the plotregion
-	add option to allocate different classes based on a variable, or possibly matrix
+/* This relies to some extent on the order of objects in Stata SVG outputs:
+	viewBox §
+	shading inside all viewBox/graphregion §
+	graphregion
+	plotregion
+	border of plotregion (box) §
+	added xline and ylines
+	gridlines
+	twoway content:
+		circles for markers
+		& alternately, circles for their borders §
+		paths (in v14, these are lots of lines)
+		[haven't checked things like other marker symbols]
+	y axis (including xtick at origin if applicable)
+	x axis (likewise)
+	y ticks & alternately, their text labels
+	x ticks & alternately, their text labels
+	[y title?]
+	x title
+	legend, if present
+	[haven't tested stuff like subtitles, captions...]
+	
+	§ means only in version 16 (15? check Tim's output)
 */
-
-/* we have to assume:
-		the axes are not inside the plot region
-		that there are ticks and labels, even if they are invisible
-		the ticks and labels are in graphregion but not plotregion
-		linear scales only
-*/
+	
 
 
 capture program drop svgtag
