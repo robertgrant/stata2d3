@@ -30,6 +30,11 @@ Stata2D3 aims to get as close as possible to one monolithic program to make inte
 — *Stephen Senn (apocryphal)*
 
 Clearly, there are a gazillion ways you can make a Stata graph, so there are limitations on what you can feed into it. There are also a frazillion ways you can use interactivity, so we just supply the most common ones and leave it to you to tweak the resulting combination of SVG, HTML and JavaScript. To describe each of these in turn:
+
+Because we use Stata's ability to export a graph to an SVG file, which only appeared from version 14 onward, this version of Stata2D3 simply will not work with older versions. See **Older versions of Stata** below for your options.
+
+If you are using version 14, you can add interactivity for circles but not lines. This is simply because SVG output was experimental and undocumented in v14, meaning that StataCorp make no commitment to keep it consistent in that testing phase (understandably so). There are therefore some fundamental differences between SVG in v14 and subsequent versions, notably that line charts are made up of lots of very short straight lines rather than SVG paths.
+
 ### Limitations on the Stata graphs
 * There are two approaches to adding data for interactivity (by this, we mean data that are not already encoded in the image as x-location or y-location). In either case, we begin by inviting the user to supply a variable name or row/column matrix (see below), which contains the data they want displayed, for example in a tooltip.
     1. Require the new data to be in the same order as the objects in the SVG (this is observation order, within each component of a twoway graph, though this does not apply at all to graphs of stats like boxplots). This is easy to code but has limitations and puts the onus on the user.
@@ -65,7 +70,7 @@ Clearly, there are a gazillion ways you can make a Stata graph, so there are lim
 * At present, the SVG is written into the HTML, so you can't use D3 functionality that relies on axes, scales and so forth. This rules out zooming. Anything that just interacts with a DOM object (and, potentially, changes that one object or others of its class) will be fine. We might consider a translator to D3 axes in due course, but right now, we're not convinced of its merits in the scenario where you want a Stata graph reproduced. Feel free to try to convince us otherwise.
 
 
-## Older versions of Stata
+## Older versions of Stata (13 and older)
 
 There is an older (and very limited) version of Stata2D3 which you can find here in the **pre-svg** branch. That will work with versions of Stata before 14, when SVG output appeared. If you have 14 and up, this **master** branch version is highly recommended: it has vastly more functionality because it is not attempting to re-draw the graph from scratch.
 
