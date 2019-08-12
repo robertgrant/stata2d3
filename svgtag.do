@@ -45,7 +45,6 @@ if `"`outputfile'"'=="" & "`replace'"=="replace" {
 // check the inputfile exists
 confirm file `"`inputfile'"'
 
-// ######################## check the Groups variable/matrix exists
 
 
 
@@ -57,6 +56,7 @@ file open `fo' using `"`outputfile'"', write text replace
 local linecount 1
 local rectcount 0
 local circlecount 1
+local circlepair 0
 file read `fi' readline
 
 // check that it's an svg file
@@ -68,7 +68,8 @@ while `"`readline'"'!="</svg>" {
 	
 	// get Stata version
 	if substr(`"`readline'"',1,21)=="<!-- This is a Stata " {
-		local stataversion=substr(`"`readline'"',22,4) // this assumes the format of that comment line doesn't change
+		local stataversion=substr(`"`readline'"',22,4) 
+		// this assumes the format of that comment line doesn't change
 	}
 
 	// get canvas size and viewBox
@@ -127,12 +128,26 @@ while `"`readline'"'!="</svg>" {
 	}
 
 	// identify circles and add class and id
+	/* ****** This assumes that v15+ has two circles per marker, so allocates the same id to each . 
+	    ***** odd-then-even pair. If you turn off mborder, it will mess
+		***** it up. Also, there should be no circles added for any other reason (at least, not
+		***** an odd number of them).
+	*/
 	if substr(`"`readline'"',2,7)=="<circle" {
 		local stylepos1=strpos(`"`readline'"',"style=")
 		local circle1=substr(`"`readline'"',1,`stylepos1'-1)
 		local circle2=substr(`"`readline'"',`stylepos1',.)
 		file write `fo' `"`circle1' class="markercircle" id="circle`circlecount'" `circle2'"' _n
-		local ++circlecount
+		if (substr("`stataversion'",1,2)=="14") {
+			local ++circlecount		
+		}
+		if (substr("`stataversion'",1,2)!="14") & (`circlepair'==0) {
+			local ++circlepair
+		}
+		else if (substr("`stataversion'",1,2)!="14") & (`circlepair'==1) {
+			local --circlepair
+			local ++circlecount
+		}
 		local writeverbatim=0
 	}
 
@@ -155,31 +170,42 @@ while `"`readline'"'!="</svg>" {
 		local stylepos1=strpos(`"`readline'"',"style=")
 		local line1=substr(`"`readline'"',1,`stylepos1'-1)
 		local line2=substr(`"`readline'"',`stylepos1',.)
-		local ++lineecount 
+		local ++linecount 
 		// ****** do we count ALL lines, or just those that represent data?
-		local writeverbatim=0
-	}
-	// does it lie on the plotregion boundary? it's an axis
-	if `x1'==`returnprx' & `x2'==`returnprx' {
-		file write `fo' `"`line1' class="y-axis" id="line`lineecount'" `line2'"' _n
-	}
-	if `y1'==`pry2' & `y2'==`pry2' {
-		file write `fo' `"`line1' class="x-axis" id="line`lineecount'" `line2'"' _n
+		// does it lie on the plotregion boundary? it's an axis
+		if `x1'==`returnprx' & `x2'==`returnprx' {
+			file write `fo' `"`line1' class="y-axis" id="line`lineecount'" `line2'"' _n
+			local writeverbatim=0
+		}
+		else if `y1'==`pry2' & `y2'==`pry2' {
+			file write `fo' `"`line1' class="x-axis" id="line`lineecount'" `line2'"' _n
+			local writeverbatim=0
+		}
+		// does it touch the plotregion boundary at one end? it's a tick
+		else if (`x1'==`returnprx' & `x1'>`x2') | (`x2'==`returnprx' & `x1'<`x2') {
+			file write `fo' `"`line1' class="y-tick" id="line`lineecount'" `line2'"' _n
+			local writeverbatim=0
+		}
+		else if (`y1'==`pry2' & `y1'<`y2') | (`y2'==`pry2' & `y1'>`y2') {
+			file write `fo' `"`line1' class="x-tick" id="line`lineecount'" `line2'"' _n
+			local writeverbatim=0
+		}
+		// is it inside the plotregion? it's a line or a gridline
+		// ******* we only check the x dimension. surely that's enough?
+		else if (`x1'>`returnprx' & `x1'<`prx2' & `x2'>`returnprx' & `x2'<`prx2') {
+			file write `fo' `"`line1' class="line" id="line`lineecount'" `line2'"' _n
+			local writeverbatim=0
+		} 
+		else {
+			local writeverbatim=1 // gridlines come out here
+		}
 	}
 	
-	// does it touch the plotregion boundary at one end? it's a tick
-	if (`x1'==`returnprx' & `x1'>`x2') | (`x2'==`returnprx' & `x1'<`x2') {
-		file write `fo' `"`line1' class="y-tick" id="line`lineecount'" `line2'"' _n
-	}
-	if (`y1'==`pry2' & `y1'<`y2') | (`y2'==`pry2' & `y1'>`y2') {
-		file write `fo' `"`line1' class="x-tick" id="line`lineecount'" `line2'"' _n
-	}
 	
-	// is it inside the plotregion? it's a line or a gridline (we forbid gridlines at present)
-	// ******* we only check the x dimension. surely that's enough?
-	if (`x1'>`returnprx' & `x1'<`prx2' & `x2'>`returnprx' & `x2'<`prx2') {
-		file write `fo' `"`line1' class="line" id="line`lineecount'" `line2'"' _n
-	} 
+	// identify paths
+		
+		
+	// detect xlabels and ylabels and use them to calculate a scale for each, converting between data and pixels
 	// is it a <text?
 	// is it between prx and grx, or pry and gry?
 	
@@ -189,28 +215,11 @@ while `"`readline'"'!="</svg>" {
 		file write `fo' `"`readline'"' _n
 	}
 	
-	// identify Stata comment and add our own (afterwards)
-	if substr(`"`readline'"',1,20)=="<!-- This is a Stata" {
-		if "`metadata'"=="metadata" {
-			file write `fo' _n "<!-- Amended to add id, class and metadata using the svgtag command by Robert Grant and Tim Morris. -->" _n
-		}
-		else {
-			file write `fo' _n "<!-- Amended to add id and class using the svgtag command by Robert Grant and Tim Morris. -->" _n
-		}
-	}
 
 	file read `fi' readline
 	local writeverbatim=1
 	local ++linecount
 }
-/* more stuff after scanning through:
-		look at all the ticks and labels/titles
-		allocate some of the text to titles, captions etc
-		associate ticks with labels
-		generate conversion scale -- could be log
-		Mata to convert matrices of pixel locations into variable values
-		write as a JSON object or JS matrices
-*/
 
 file write `fo' "</svg>" _n _n
 
