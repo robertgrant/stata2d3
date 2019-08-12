@@ -1,8 +1,9 @@
 // parse and tag Stata SVG files
 
 /* To do:
-	add path ids
+	v15 & 16 multiple rects - assign graphregion and plotregion
 	add groups variable
+	check that it's an svg file?
 */
 
 /* This relies to some extent on the order of objects in Stata SVG outputs:
@@ -63,18 +64,18 @@ tempname fo
 file open `fi' using `"`inputfile'"', read text
 file open `fo' using `"`outputfile'"', write text replace
 
+local svglinecount 0
 local linecount 1
+local pathcount 1
 local rectcount 0
+local rectregions 0 // flags up when the rects that show various regions, shading and borders is finished
 local circlecount 1
-local circlepair 0
-file read `fi' readline
+local circlepair 0 // binary circle counter to get pairs for Stata v15+
 
-// check that it's an svg file
+file read `fi' readline
 
 while `"`readline'"'!="</svg>" {
 	local writeverbatim=1 // indicator for writing unchanged at the end of the loop
-	//dis "I'm writing line number `linecount': "
-	//dis substr(`"`readline'"',1,20)
 	
 	// get Stata version
 	if substr(`"`readline'"',1,21)=="<!-- This is a Stata " {
@@ -115,26 +116,40 @@ while `"`readline'"'!="</svg>" {
 		local writeverbatim=0
 		local ++rectcount
 	}
-	else if substr(`"`readline'"',2,5)=="<rect" & `rectcount'==1 {
+	// plotregions are identified as having:
+	//    (a different xpos and ypos to the graphregion AND no stroke) OR
+	//    the last <rect> after the preliminary info at the top of the file
+	else if substr(`"`readline'"',2,5)=="<rect" & `rectcount'>0 {
 		local xpos1=strpos(`"`readline'"',"x=")+3
 		local xpos2=strpos(`"`readline'"',"y=")-1	
 		local ypos1=strpos(`"`readline'"',"y=")+3
 		local ypos2=strpos(`"`readline'"',"width=")-1	
 		local returnprx=substr(`"`readline'"',`xpos1',`xpos2'-`xpos1'-1)
 		local returnpry=substr(`"`readline'"',`ypos1',`ypos2'-`ypos1'-1)
-		local widthpos1=strpos(`"`readline'"',"width=")+7
-		local widthpos2=strpos(`"`readline'"',"height=")-1	
-		local heightpos1=strpos(`"`readline'"',"height=")+8
-		local heightpos2=strpos(`"`readline'"',"style=")-1	
-		local returnprwidth=substr(`"`readline'"',`widthpos1',`widthpos2'-`widthpos1'-1)
-		local returnprheight=substr(`"`readline'"',`heightpos1',`heightpos2'-`heightpos1'-1)
-		local plotregion1=substr(`"`readline'"',1,`heightpos2')
-		local plotregion2=substr(`"`readline'"',`heightpos2'+1,.)
-		local pry2=`returnpry'+`returnprheight'
-		local prx2=`returnprx'+`returnprwidth'
-		file write `fo' `"`plotregion1' class="plotregion" `plotregion2'"' _n
-		local writeverbatim=0
-		local ++rectcount
+		if  "`returnprx'"!="`returngrx'" & ///
+			"`returnprx'"!="0.00" &        ///
+			"`returnpry'"!="`returngry'" & ///
+			"`returnpry'"!="0.00" &        ///
+			strpos(`"`readline'"',"stroke")==0 { // note that "0.00" != "0"
+			local widthpos1=strpos(`"`readline'"',"width=")+7
+			local widthpos2=strpos(`"`readline'"',"height=")-1	
+			local heightpos1=strpos(`"`readline'"',"height=")+8
+			local heightpos2=strpos(`"`readline'"',"style=")-1	
+			local returnprwidth=substr(`"`readline'"',`widthpos1',`widthpos2'-`widthpos1'-1)
+			local returnprheight=substr(`"`readline'"',`heightpos1',`heightpos2'-`heightpos1'-1)
+			local plotregion1=substr(`"`readline'"',1,`heightpos2')
+			local plotregion2=substr(`"`readline'"',`heightpos2'+1,.)
+			local pry2=`returnpry'+`returnprheight'
+			local prx2=`returnprx'+`returnprwidth'
+			file write `fo' `"`plotregion1' class="plotregion" `plotregion2'"' _n
+			local writeverbatim=0
+			local ++rectcount
+			local rectregions 1
+		}
+		else {
+			local writeverbatim=1
+			local ++rectcount
+		}
 	}
 
 	// identify circles and add class and id
@@ -180,40 +195,47 @@ while `"`readline'"'!="</svg>" {
 		local stylepos1=strpos(`"`readline'"',"style=")
 		local line1=substr(`"`readline'"',1,`stylepos1'-1)
 		local line2=substr(`"`readline'"',`stylepos1',.)
-		local ++linecount 
 		// ****** do we count ALL lines, or just those that represent data?
 		// does it lie on the plotregion boundary? it's an axis
 		if `x1'==`returnprx' & `x2'==`returnprx' {
-			file write `fo' `"`line1' class="y-axis" id="line`lineecount'" `line2'"' _n
+			file write `fo' `"`line1' class="y-axis" id="line`linecount'" `line2'"' _n
 			local writeverbatim=0
 		}
 		else if `y1'==`pry2' & `y2'==`pry2' {
-			file write `fo' `"`line1' class="x-axis" id="line`lineecount'" `line2'"' _n
+			file write `fo' `"`line1' class="x-axis" id="line`linecount'" `line2'"' _n
 			local writeverbatim=0
 		}
 		// does it touch the plotregion boundary at one end? it's a tick
 		else if (`x1'==`returnprx' & `x1'>`x2') | (`x2'==`returnprx' & `x1'<`x2') {
-			file write `fo' `"`line1' class="y-tick" id="line`lineecount'" `line2'"' _n
+			file write `fo' `"`line1' class="y-tick" id="line`linecount'" `line2'"' _n
 			local writeverbatim=0
 		}
 		else if (`y1'==`pry2' & `y1'<`y2') | (`y2'==`pry2' & `y1'>`y2') {
-			file write `fo' `"`line1' class="x-tick" id="line`lineecount'" `line2'"' _n
+			file write `fo' `"`line1' class="x-tick" id="line`linecount'" `line2'"' _n
 			local writeverbatim=0
 		}
 		// is it inside the plotregion? it's a line or a gridline
 		// ******* we only check the x dimension. surely that's enough?
 		else if (`x1'>`returnprx' & `x1'<`prx2' & `x2'>`returnprx' & `x2'<`prx2') {
-			file write `fo' `"`line1' class="line" id="line`lineecount'" `line2'"' _n
+			file write `fo' `"`line1' class="line" id="line`linecount'" `line2'"' _n
 			local writeverbatim=0
 		} 
 		else {
 			local writeverbatim=1 // gridlines come out here
 		}
+		local ++linecount 
 	}
 	
 	
 	// identify paths
-		
+	if substr(`"`readline'"',2,5)=="<path" {
+		local stylepos1=strpos(`"`readline'"',"style=")
+		local path1=substr(`"`readline'"',1,`stylepos1'-1)
+		local path2=substr(`"`readline'"',`stylepos1',.)
+		file write `fo' `"`path1' class="path" id="path`pathcount'" `path2'"' _n
+		local writeverbatim=0
+	}
+
 		
 	// detect xlabels and ylabels and use them to calculate a scale for each, converting between data and pixels
 	// is it a <text?
@@ -225,10 +247,9 @@ while `"`readline'"'!="</svg>" {
 		file write `fo' `"`readline'"' _n
 	}
 	
-
 	file read `fi' readline
 	local writeverbatim=1
-	local ++linecount
+	local ++svglinecount
 }
 
 file write `fo' "</svg>" _n _n
@@ -268,5 +289,5 @@ end
 
 
 // example run
-svgtag "auto.svg", out("autotagged.svg")
+// svgtag "auto.svg", out("autotagged.svg")
 
