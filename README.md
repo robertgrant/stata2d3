@@ -15,6 +15,20 @@ Here's some examples:
 ## Commands
 **svgtag** takes an SVG graph file exported by Stata, scans it for objects ike the plot region, axes, axis titles, gridlines, circles and lines inside the plotregion, and so on. Once it has found those, it adds *ids* and *classes* (which we collectively call "tags" here, much to the horror of full-stack rockstar web devz), which help D3 keep track of what's going on, and what it can change or interact with inside the SVG.
 It can only work with SVG exported by Stata because those files follow a clearly specified structure, and **svgtag** uses that structure to find its way around; you can't feed files from other software into it, nor can you amend your Stata SVG in Inkscape or Illustrator, and then plug it into **svgtag**.
+```
+sysuse auto, clear
+gen fits=_n*2 in 1/2
+twoway (scatter price mpg) (lfit price mpg) (qfit price mpg), yline(5000) xline(20) scheme(s2color)
+graph export auto.svg, replace
+svgtag "auto.svg", out("autotagged.svg") mgroups(foreign) lgroups(fits)
+```
+* **svgtag** *filename*, Outputfile(*filename*) MGroups(*varname numeric*) LGroups(*varname numeric*) Replace
+* The filename before the comma is the input SVG file. We do not check that it is a valid SVG file but it must exist. You must type it in quotes.
+* Outputfile is self-explanatory, this is where the tagged file gets saved, unless you choose Replace. It will be another SVG file, identical when viewed in the browser or vector graphics editor, but with tags added.
+* MGroups is a variable that contains integers telling svgtag which group each marker belongs to. These will be added as classes. The variable can have missing values, which will create a class "markergroup.", which will have no effect. If you need more values than there are obs in the dataset, you can use a different data frame in Stata v16. We might add a matrix option for v14-15 later.
+* LGroups does the same for lines inside the plotregion. Note that this actually acts on SVG objects called paths, which are only output from Stata v16 onward.
+* Replace has the usual function.
+
 
 **d3** is a prefix, so there are options before the colon specific to interaction in the browser, and after the colon you supply a standard Stata graph-making command. Whatever is in the active graph window is then exported to a temporary SVG format file. It calls **svgtag** and **svgwithjs** (which we might want to rename).
 

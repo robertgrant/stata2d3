@@ -43,7 +43,7 @@ if `"`inputfile'"'=="" {
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="" {
-	dis as error "svgtag error: You must specify either an output filename or the replace option"
+	dis as error "svgtag error: You must specify an output filename and/or the replace option"
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="replace" {
@@ -54,7 +54,12 @@ if `"`outputfile'"'=="" & "`replace'"=="replace" {
 // check the inputfile exists
 confirm file `"`inputfile'"'
 
-
+// error if outputfile exists and no Replace
+capture confirm file `"`outputfile'"'
+if !_rc & "`replace'"=="" {
+	dis as error "outputfile already exists; choose another filename or specify Replace"
+	error 100
+}
 
 
 tempname fi
@@ -178,8 +183,8 @@ while `"`readline'"'!="</svg>" {
 		local circle2=substr(`"`readline'"',`stylepos1',.)
 		if "`mgroups'"!="" {
 			local circlegroup=`mgroups'[`circlecount']
-			local classtext "markercircle markercircle`circlegroup'"
-			/* note that this will add a meaningless class "markercircle." to circles after the 
+			local classtext "markercircle markergroup`circlegroup'"
+			/* note that this will add a meaningless class "markergroup." to circles after the 
 			   data run out, such as in the legend, but we think this is harmless... */
 		}
 		else {
