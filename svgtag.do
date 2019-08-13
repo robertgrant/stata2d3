@@ -1,9 +1,8 @@
 // parse and tag Stata SVG files
 
 /* To do:
-	v15 & 16 multiple rects - assign graphregion and plotregion
+	v14 & 15 lines-as-paths have stroke-linecap before style
 	add groups variable
-	check that it's an svg file?
 */
 
 /* This relies to some extent on the order of objects in Stata SVG outputs:
@@ -73,6 +72,7 @@ local circlecount 1
 local circlepair 0 // binary circle counter to get pairs for Stata v15+
 
 file read `fi' readline
+file read `fi' nextline
 
 while `"`readline'"'!="</svg>" {
 	local writeverbatim=1 // indicator for writing unchanged at the end of the loop
@@ -120,43 +120,52 @@ while `"`readline'"'!="</svg>" {
 	/*	plotregions are identified by finding the last rect at the beginning of the file
 	  	(this is why we read in nextline)
 		for v14:
-			simply use x, y, x+width, y-height
+			simply use x, y, x+width, y+height
 		for v15-16:
 			half the value of stroke-width (if there is stroke-width) is subtracted from x to get left edge
-			and x, width, and half of stroke-width (if there is stroke-width) are added to get right edge
+			this left edge location is added to the width to get the right edge
 			and analogously for top and bottom.
 	*/
-	else if substr(`"`readline'"',2,5)=="<rect" & `rectcount'>0 {
+	else if (substr(`"`readline'"',2,5)=="<rect") & (substr(`"`nextline'"',2,5)!="<rect") & `rectregions'==0 {
 		local xpos1=strpos(`"`readline'"',"x=")+3
 		local xpos2=strpos(`"`readline'"',"y=")-1	
 		local ypos1=strpos(`"`readline'"',"y=")+3
 		local ypos2=strpos(`"`readline'"',"width=")-1	
 		local returnprx=substr(`"`readline'"',`xpos1',`xpos2'-`xpos1'-1)
 		local returnpry=substr(`"`readline'"',`ypos1',`ypos2'-`ypos1'-1)
-		if  "`returnprx'"!="`returngrx'" & ///
-			"`returnprx'"!="0.00" &        ///
-			"`returnpry'"!="`returngry'" & ///
-			"`returnpry'"!="0.00" &        ///
-			strpos(`"`readline'"',"stroke")==0 { // note that "0.00" != "0"
-			local widthpos1=strpos(`"`readline'"',"width=")+7
-			local widthpos2=strpos(`"`readline'"',"height=")-1	
-			local heightpos1=strpos(`"`readline'"',"height=")+8
-			local heightpos2=strpos(`"`readline'"',"style=")-1	
-			local returnprwidth=substr(`"`readline'"',`widthpos1',`widthpos2'-`widthpos1'-1)
-			local returnprheight=substr(`"`readline'"',`heightpos1',`heightpos2'-`heightpos1'-1)
-			local plotregion1=substr(`"`readline'"',1,`heightpos2')
-			local plotregion2=substr(`"`readline'"',`heightpos2'+1,.)
-			local pry2=`returnpry'+`returnprheight'
-			local prx2=`returnprx'+`returnprwidth'
-			file write `fo' `"`plotregion1' class="plotregion" `plotregion2'"' _n
-			local writeverbatim=0
-			local ++rectcount
-			local rectregions 1
+		local widthpos1=strpos(`"`readline'"',"width=")+7
+		local widthpos2=strpos(`"`readline'"',"height=")-1	
+		local heightpos1=strpos(`"`readline'"',"height=")+8
+		local heightpos2=strpos(`"`readline'"',"style=")-1	
+		local returnprwidth=substr(`"`readline'"',`widthpos1',`widthpos2'-`widthpos1'-1)
+		local returnprheight=substr(`"`readline'"',`heightpos1',`heightpos2'-`heightpos1'-1)
+		local plotregion1=substr(`"`readline'"',1,`heightpos2')
+		local plotregion2=substr(`"`readline'"',`heightpos2'+1,.)
+		if(strpos(`"`readline'"',"stroke-width")!=0) {
+			local strokewidthpos1=strpos(`"`readline'"',"stroke-width:")+13
+			local strokewidthpos2=strpos(`"`readline'"',"/>")
+			local prstrokewidth=substr(`"`readline'"',`strokewidthpos1',`strokewidthpos2'-`strokewidthpos1'-1)
+			dis "on line `svglinecount', I found stroke-width `prstrokewidth'"
 		}
 		else {
-			local writeverbatim=1
-			local ++rectcount
+			local prstrokewidth=0
 		}
+		if substr("`stataversion'",1,2)=="14" {
+			local pry2=`returnpry'+`returnprheight'
+			local prx2=`returnprx'+`returnprwidth'
+		}
+		else {
+			local returnprx=round(`returnprx'-(`prstrokewidth'/2),0.01)
+			local returnpry=round(`returnpry'-(`prstrokewidth'/2),0.01)
+			local returnprheight=`returnprheight'+`prstrokewidth'
+			local returnprwidth=`returnprwidth'+`prstrokewidth'
+			local pry2=`returnpry'+`returnprheight'
+			local prx2=`returnprx'+`returnprwidth'
+		}
+		file write `fo' `"`plotregion1' class="plotregion" `plotregion2'"' _n
+		local writeverbatim=0
+		local ++rectcount
+		local rectregions=1
 	}
 
 	// identify circles and add class and id
@@ -254,7 +263,8 @@ while `"`readline'"'!="</svg>" {
 		file write `fo' `"`readline'"' _n
 	}
 	
-	file read `fi' readline
+	local readline=`"`nextline'"'
+	file read `fi' nextline
 	local writeverbatim=1
 	local ++svglinecount
 }
@@ -284,6 +294,8 @@ return local plotregionwidth "`returnprwidth'"
 return local plotregionheight "`returnprheight'"
 return local plotregionx "`returnprx'"
 return local plotregiony "`returnpry'"
+return local plotregionx2 "`prx2'"
+return local plotregiony2 "`pry2'"
 return local graphregionwidth "`returngrwidth'"
 return local graphregionheight "`returngrheight'"
 return local graphregionx "`returngrx'"

@@ -7,7 +7,7 @@ Stata2D3
 
 This is a collection of Stata commands that allow you to export your Stata graphics into an interactive webpage. Essentially, it saves your graph as SVG format, annotates that, wraps it in an HTML file with link to the [D3](https://d3js.org) JavaScript library, and if you wish, it adds some D3 code to give you a little interactivity. It requires Stata versions 14+ (but see below).
 Here's some examples:
-* *these are aspirational notes of work in progress*
+* *these are aspirational notes of work in progress and no guarantee of syntax to come*
 * sysuse auto, clear
 * d3, hover_tooltip(make): scatter price mpg // adds a tooltip on mouse hover which shows the text in the **make** variable
 
@@ -25,15 +25,15 @@ There are some other SVG-manipulating commands at [stata-svg](https://github.com
 
 
 ## Limitations
-Stata2D3 aims to get as close as possible to one monolithic program to make interactive content from any Stata graph. You might well argue that this is foolish, and we don't entirely disagree. It is intended as a stepping stone, to help people make something quickly that they can then edit, or give to web developers, or to help them learn about SVG and JavaScript. It is never going to do everything for you.
+Stata2D3 aims to get as close as possible to one monolithic program to make interactive content from any Stata graph. You might well argue that this is foolish, and we don't entirely disagree. It is intended as a stepping stone, to help people make something quickly that they can then edit, or give to web developers, or to help them learn about SVG, HTML and JavaScript. It is never going to do everything for you, but it can get you started.
 > The longest of journeys begins with a single HTML file
 — *Stephen Senn (apocryphal)*
 
-Clearly, there are a gazillion ways you can make a Stata graph, so there are limitations on what you can feed into it. There are also a frazillion ways you can use interactivity, so we just supply the most common ones and leave it to you to tweak the resulting combination of SVG, HTML and JavaScript. To describe each of these in turn:
+Clearly, there are a gazillion ways you can make a Stata graph, so there are limitations on what you can feed into it. There are also a frazillion ways you can use interactivity, so we just supply the most common ones and leave it to you to tweak the resulting combination of SVG, HTML and JavaScript.
 
-Because we use Stata's ability to export a graph to an SVG file, which only appeared from version 14 onward, this version of Stata2D3 simply will not work with older versions. See **Older versions of Stata** below for your options.
+Because we use Stata's ability to export a graph to an SVG file, which only appeared from version 14 onward, this version of Stata2D3 simply will not work with older versions. See **Older versions of Stata** below for alternatives.
 
-If you are using version 14, you can add interactivity for circles but not lines. This is simply because SVG output was experimental and undocumented in v14, meaning that StataCorp make no commitment to keep it consistent in that testing phase (understandably so). There are therefore some fundamental differences between SVG in v14 and subsequent versions, notably that line charts are made up of lots of very short straight lines rather than SVG paths.
+If you are using version 14 or 15, you can add interactivity for circles but not lines. This is simply because line charts were made up of lots of very short straight lines rather than SVG paths in those versions. We can't second-guess which of these lines you intended to make up one path, but you might be able to use a tool like Inkscape to edit your lines into one path (or indeed edit them manually!) and then run svgtag, manually tag the paths (because they will not be) and d3pretagged.
 
 ### Limitations on the Stata graphs
 * There are two approaches to adding data for interactivity (by this, we mean data that are not already encoded in the image as x-location or y-location). In either case, we begin by inviting the user to supply a variable name or row/column matrix (see below), which contains the data they want displayed, for example in a tooltip.
@@ -41,14 +41,19 @@ If you are using version 14, you can add interactivity for circles but not lines
     2. Allow the new data to be in any order, and to include x-y locations (or maybe, for more advanced users, an id, to match that added by **svgtag**) of the objects to which they relate. This requires us to calculate the data-to-pixel scale so we can find objects within a certain tolerance of the specified location and attach the data. This is more flexible for users, but I'm not sure how many would want to use additional data that were not in a variable. Also, it's not foolproof as there could be more than one object at a location.
     * We are working with option 1 and might expand to option 2, depending on the experience of early adopters.
     * note also that string data (which will usually be the case) has to be in a variable, so if data are plotted multiple times, the variable will need to be longer than _N; in v16+ it can be in a different data frame, but in v14-15 it would have to be created in Mata, and we need to work out how this would then be passed to **d3**
-* We identify graphregion and plotregion (and from this, axes, ticks, gridlines and data-representing lines) on the basis of the first group of rect objects in the SVG. In Stata 14-16, these appear at the beginning of the SVG file (long may this continue...) but there are between two and five depending on version, scheme, presence of shading, and presence of plotregion box. We take the first to be the graphregion, and the plotregion is the last one that:
-    * has x and y positions (top left hand corner, because SVG measures y position downward) different to the graphregion AND
-    * does not contain the word "stroke" (indicating a border or shaded background).
+* We identify graphregion and plotregion (and from this, axes, ticks, gridlines and data-representing paths) on the basis of the first group of rect objects in the SVG. In Stata 14-16, these appear at the beginning of the SVG file (long may this continue...) but there are between two and six depending on version, scheme, presence of shading, and presence of plotregion box. We take x, y, width and height from the first to be the graphregion (which is often the same as the viewBox), while the plotregion is identified by finding the last rect at the beginning of the file (this is why we read in nextline), then:
+    * for v14:
+		    * simply use x, y, x+width, y+height
+		* for v15-16:
+		    * half the value of stroke-width (if there is stroke-width) is subtracted from x to get the left edge
+		    * this left edge location is added to the width to get the right edge
+		    * and analogously for top and bottom.
     * On this basis, plotregions must be smaller than graphregions, and if you add bespoke borders and shading to them, you could have unexpected results. If you must have such touches, run **svgtag**, then amend the tagged SVG, then run **d3pretagged**.
-* If we implement option 2 above, all graphs must have x and y axes, with ticks and labels, even if they are invisible (this is because we will read data values from xlabel and ylabel to allow creation of d3 scales e.g. for tooltip values as the mouse moves along a line chart; at present we do not have this functionality and the axis requirement is not enforced)
+* If we implement option (ii) above, all graphs must have x and y axes, with ticks and labels, even if they are invisible (this is because we will read data values from xlabel and ylabel to allow creation of d3 scales e.g. for tooltip values as the mouse moves along a line chart; at present we do not have this functionality and the axis requirement is not enforced)
 * Axes may not be inside the plotregion (a horizontal axis at zero in the middle of the graph, for example). You can add them later but any line inside the plotregion might be misinterpreted as data
-* Surely you wouldn't make a graph with two y-axes. Would you? Well, don't do it here. y-axis must be on the left edge of the plotregion and x axis on the bottom edge. (this is because we will read data values from xlabel and ylabel to allow creation of d3 scales e.g. for tooltip values as the mouse moves along a line chart; at present we do not have this functionality and the axis requirement is not enforced.) We make no guarantee of how z-axes and other wacky stuff will affect the output.
+* Surely you wouldn't make a graph with two y-axes. Would you? Well, don't do it here. y-axis must be on the left edge of the plotregion and x axis on the bottom edge. (this is because we might read data values from xlabel and ylabel to allow creation of d3 scales e.g. for tooltip values as the mouse moves along a line chart; at present we do not have this functionality and the axis requirement is not enforced.) We make no guarantee of how z-axes and other wacky stuff will affect the output.
 * At present, we only deal with circular marker symbols. You can output other shapes and they will be carried through, but we can't apply interactivity to them (yet).
+* We don't apply interactivity to lines from Stata versions 14 or 15, as explained above.
 * At present, we don't allow grid lines, because they will be interpreted as data in a line chart, but we intend to add the functionality to detect and ignore them. However, this can only be on the basis that there is a <line> element that has ends on the left and right edges of the plotregion and those ends have the same y pixel locations; if you had a genuine line that did that, it would be flagged as a gridline and no interactivity applied. So, we will need an option to turn off the gridline filter. I suspect that the number of people blithely drawing gridlines with s2color scheme is more than those who wish to have specified horizontal lines with interactivity.
 * linear scales only (because we read the axis labels to get a data-to-pixel conversion); this could be extended to log scales in future
 * our approach to these limitations is *not* to check them but to warn the user that things may well go awry if they do not comply
@@ -79,3 +84,8 @@ There is an older (and very limited) version of Stata2D3 which you can find here
 
 
 ## What does d3pretagged look for?
+* It will ignore Stata version as declared at the top of the SVG file, allowing you to manually edit your SVGs (especially for line-to-path conversion).
+
+### Thank you:
+* Brennan Kahan
+* Billy Buchanan
