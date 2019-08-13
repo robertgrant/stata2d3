@@ -1,7 +1,6 @@
 // parse and tag Stata SVG files
 
 /* To do:
-	v14 & 15 lines-as-paths have stroke-linecap before style
 	add groups variable
 */
 
@@ -11,12 +10,12 @@
 	graphregion
 	plotregion
 	border of plotregion (box) §
-	added xline and ylines
 	gridlines
+	added xline and ylines
 	twoway content:
 		circles for markers
 		& alternately, circles for their borders §
-		paths (in v14, these are lots of lines)
+		paths (in v14 & 15, these are lots of lines)
 		[haven't checked things like other marker symbols]
 	y axis (including xtick at origin if applicable)
 	x axis (likewise)
@@ -27,7 +26,7 @@
 	legend, if present
 	[haven't tested stuff like subtitles, captions...]
 	
-	§ means only in version 16 (15? check Tim's output)
+	§ means not in version 14
 */
 	
 
@@ -145,7 +144,6 @@ while `"`readline'"'!="</svg>" {
 			local strokewidthpos1=strpos(`"`readline'"',"stroke-width:")+13
 			local strokewidthpos2=strpos(`"`readline'"',"/>")
 			local prstrokewidth=substr(`"`readline'"',`strokewidthpos1',`strokewidthpos2'-`strokewidthpos1'-1)
-			dis "on line `svglinecount', I found stroke-width `prstrokewidth'"
 		}
 		else {
 			local prstrokewidth=0
@@ -204,13 +202,16 @@ while `"`readline'"'!="</svg>" {
 		local x2pos2=strpos(`"`readline'"',"y2=")-1
 		local y2pos1=strpos(`"`readline'"',"y2=")+4
 		local y2pos2=strpos(`"`readline'"',"style=")-1	
+		local linecappos=strpos(`"`readline'"',"stroke-linecap")-1
+		if `linecappos'!=(-1) & `linecappos'<`y2pos2' {
+			local y2pos2=`linecappos'
+		}
 		local x1=substr(`"`readline'"',`x1pos1',`x1pos2'-`x1pos1'-1)
 		local x2=substr(`"`readline'"',`x2pos1',`x2pos2'-`x2pos1'-1)
 		local y1=substr(`"`readline'"',`y1pos1',`y1pos2'-`y1pos1'-1)
 		local y2=substr(`"`readline'"',`y2pos1',`y2pos2'-`y2pos1'-1)
-		local stylepos1=strpos(`"`readline'"',"style=")
-		local line1=substr(`"`readline'"',1,`stylepos1'-1)
-		local line2=substr(`"`readline'"',`stylepos1',.)
+		local line1=substr(`"`readline'"',1,`y2pos2'-1)
+		local line2=substr(`"`readline'"',`y2pos2',.)
 		// ****** do we count ALL lines, or just those that represent data?
 		// does it lie on the plotregion boundary? it's an axis
 		if `x1'==`returnprx' & `x2'==`returnprx' {
