@@ -33,7 +33,7 @@
 
 capture program drop svgtag
 program define svgtag, rclass
-syntax anything [, Outputfile(string) Replace Metadata]
+syntax anything [, Outputfile(string) MGroups(varname numeric) LGroups(varname numeric) Replace]
 args inputfile
 
 
@@ -176,7 +176,16 @@ while `"`readline'"'!="</svg>" {
 		local stylepos1=strpos(`"`readline'"',"style=")
 		local circle1=substr(`"`readline'"',1,`stylepos1'-1)
 		local circle2=substr(`"`readline'"',`stylepos1',.)
-		file write `fo' `"`circle1' class="markercircle" id="circle`circlecount'" `circle2'"' _n
+		if "`mgroups'"!="" {
+			local circlegroup=`mgroups'[`circlecount']
+			local classtext "markercircle markercircle`circlegroup'"
+			/* note that this will add a meaningless class "markercircle." to circles after the 
+			   data run out, such as in the legend, but we think this is harmless... */
+		}
+		else {
+			local classtext "markercircle"
+		}
+		file write `fo' `"`circle1' class="`classtext'" id="circle`circlecount'" `circle2'"' _n
 		if (substr("`stataversion'",1,2)=="14") {
 			local ++circlecount		
 		}
@@ -232,8 +241,8 @@ while `"`readline'"'!="</svg>" {
 			local writeverbatim=0
 		}
 		// is it inside the plotregion? it's a line or a gridline
-		// ******* we only check the x dimension. surely that's enough?
-		else if (`x1'>`returnprx' & `x1'<`prx2' & `x2'>`returnprx' & `x2'<`prx2') {
+		else if (`x1'>`returnprx' & `x1'<`prx2' & `x2'>`returnprx' & `x2'<`prx2' & ///
+				 `y1'>`returnpry' & `y1'<`pry2' & `y2'>`returnpry' & `y2'<`pry2') {
 			file write `fo' `"`line1' class="line" id="line`linecount'" `line2'"' _n
 			local writeverbatim=0
 		} 
@@ -249,8 +258,19 @@ while `"`readline'"'!="</svg>" {
 		local stylepos1=strpos(`"`readline'"',"style=")
 		local path1=substr(`"`readline'"',1,`stylepos1'-1)
 		local path2=substr(`"`readline'"',`stylepos1',.)
-		file write `fo' `"`path1' class="path" id="path`pathcount'" `path2'"' _n
+		
+		if "`lgroups'"!="" {
+			local pathgroup=`lgroups'[`pathcount']
+			local classtext "path path`pathgroup'"
+			/* note that this will add a meaningless class "path." to paths after the 
+			   data run out, but we think this is harmless... */
+		}
+		else {
+			local classtext "path"
+		}
+		file write `fo' `"`path1' class="`classtext'" id="path`pathcount'" `path2'"' _n
 		local writeverbatim=0
+		local ++pathcount
 	}
 
 		
@@ -286,7 +306,7 @@ if `"`outputfile'"'=="`tempout'" & "`replace'"=="replace" {
 	}
 }
 
-// return metadata
+// return dimensions
 return local stataversion "`stataversion'"
 return local width "`returnwidth'"
 return local height "`returnheight'"
