@@ -96,7 +96,7 @@ while `"`readline'"'!="</svg>" {
 		local returnviewBox=substr(`"`readline'"',`viewBoxpos1',`viewBoxpos2'-`viewBoxpos1'-1)
 	}
 	
-	// identify graphregion and plotregion, extract dimensions, and add class
+	// identify graphregion
 	if substr(`"`readline'"',2,5)=="<rect" & `rectcount'==0 {
 		local xpos1=strpos(`"`readline'"',"x=")+3
 		local xpos2=strpos(`"`readline'"',"y=")-1	
@@ -116,9 +116,16 @@ while `"`readline'"'!="</svg>" {
 		local writeverbatim=0
 		local ++rectcount
 	}
-	// plotregions are identified as having:
-	//    (a different xpos and ypos to the graphregion AND no stroke) OR
-	//    the last <rect> after the preliminary info at the top of the file
+	// identify plotregion
+	/*	plotregions are identified by finding the last rect at the beginning of the file
+	  	(this is why we read in nextline)
+		for v14:
+			simply use x, y, x+width, y-height
+		for v15-16:
+			half the value of stroke-width (if there is stroke-width) is subtracted from x to get left edge
+			and x, width, and half of stroke-width (if there is stroke-width) are added to get right edge
+			and analogously for top and bottom.
+	*/
 	else if substr(`"`readline'"',2,5)=="<rect" & `rectcount'>0 {
 		local xpos1=strpos(`"`readline'"',"x=")+3
 		local xpos2=strpos(`"`readline'"',"y=")-1	
