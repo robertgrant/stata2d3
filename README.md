@@ -49,6 +49,8 @@ Because we use Stata's ability to export a graph to an SVG file, which only appe
 
 If you are using version 14 or 15, you can add interactivity for circles but not lines. This is simply because line charts were made up of lots of very short straight lines rather than SVG paths in those versions. We can't second-guess which of these lines you intended to make up one path, but you might be able to use a tool like Inkscape to edit your lines into one path (or indeed edit them manually!) and then run svgtag, manually tag the paths (because they will not be) and d3pretagged.
 
+The group variable must be numeric. We intend this to be an integer with value labels. The integer values will be used internally in the SVG tagging and the JavaScript (hence, no decimal places, please!) and the label text will be used in buttons.
+
 ### Limitations on the Stata graphs
 * There are two approaches to adding data for interactivity (by this, we mean data that are not already encoded in the image as x-location or y-location). In either case, we begin by inviting the user to supply a variable name or row/column matrix (see below), which contains the data they want displayed, for example in a tooltip.
     1. Require the new data to be in the same order as the objects in the SVG (this is observation order, within each component of a twoway graph, though this does not apply at all to graphs of stats like boxplots). This is easy to code but has limitations and puts the onus on the user.

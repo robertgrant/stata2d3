@@ -31,8 +31,8 @@
 	
 
 
-capture program drop svgtag
-program define svgtag, rclass
+capture program drop d3_tag
+program define d3_tag, rclass
 syntax anything [, Outputfile(string) MGroups(varname numeric) LGroups(varname numeric) Replace]
 args inputfile
 
@@ -334,5 +334,8 @@ end
 
 
 // example run
-// svgtag "auto.svg", out("autotagged.svg")
+sysuse auto, clear
+scatter price mpg, scheme(s1mono)
+graph export "auto.svg", replace
+d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
 
