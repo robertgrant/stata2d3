@@ -6,11 +6,19 @@ Stata2D3
 ## Overview
 
 This is a collection of Stata commands that allow you to export your Stata graphics into an interactive webpage. Essentially, it saves your graph as SVG format, annotates that, wraps it in an HTML file with link to the [D3](https://d3js.org) JavaScript library, and if you wish, it adds some D3 code to give you a little interactivity. It requires Stata versions 14+ (but see below).
-For example:
+For example (aspirations for the StataConf version, not yet possible):
 * sysuse auto, clear
 * d3, clickright(make) mgroups(foreign) htmlfile("mypage.html"): scatter price mpg, scheme(s1mono)
 * *When you click on a marker, the content of the "make" variable will appear to the right of the graph.*
 * *There will also be buttons underneath for "Foreign", "Domestic" (the two levels of the "foreign" variable) and "all data", which highlight markers in that group.*
+
+Another example (what is currently possible):
+* sysuse auto, clear
+* scatter price mpg, scheme(s1mono)
+* graph export "mygraph.svg", replace
+* d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
+* d3_html "autotagged.svg", htmlfile("d3_html_test.html") svgv(16) clickright(make) groupbuttons(foreign)
+* * and you can view the resulting file here in this repo*
 
 ## Commands
 
