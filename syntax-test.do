@@ -3,7 +3,6 @@
 * Very simple command
 sysuse auto
 program drop _all
-d3, saving(t1, replace) : twoway scatter price mpg
-
+d3, saving(t1, replace) savesvg(t1svg, replace) : twoway scatter price mpg
 
 * More complex commands
