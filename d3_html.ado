@@ -1,6 +1,7 @@
+*! Rob Grant, Tim Morris | 30aug2019
 
-capture program drop d3_html
 program define d3_html
+version 14
 syntax anything [, HTMLFile(string) ///
 				   CLICKBelow(varname) ///
 				   CLICKRight(varname) ///
@@ -129,7 +130,6 @@ if "`hoverright'"!="" {
 	file write `fo' "})" _n _n
 }
 
-
 // add button functions
 if "`groupbuttons'"!="" {
 	foreach gn of local group_numbers {
@@ -143,24 +143,16 @@ if "`groupbuttons'"!="" {
 	file write `fo' "}" _n _n
 }
 
-
-
 file write `fo' "</script>" _n
-
-
-
 
 // finish the HTML file
 file write `fo' "</body>"
 file write `fo' "</html>"
+
 end
 
 
-
-
-
-
-// example run
+/* example run
 clear
 sysuse auto
 cd "~/git/stata2d3"
