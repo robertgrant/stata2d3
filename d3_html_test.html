@@ -3,7 +3,7 @@
 <head>
   <meta charset='utf-8'>
   <title></title>
-  <script type='text/javascript' src='https://d3js.org/d3.v3.min.js'></script>
+  <script type='text/javascript' src='d3.v3.min.js'></script>
   <style media='screen'>
     p#righttext {
       position: relative;
@@ -195,6 +195,7 @@
 <button type='button' name='markercircle0button' onclick='markercircle0fun();'>Domestic</button>
 <button type='button' name='markercircle1button' onclick='markercircle1fun();'>Foreign</button>
 <button type='button' name='markercircleallbutton' onclick='markercircleallfun();'>All data</button>
+
 <script type='text/javascript'>
 
 var clickright=['AMC Concord',
@@ -345,10 +346,184 @@ var clickright=['AMC Concord',
 'VW Scirocco',
 'Volvo 260',
 'Volvo 260'];
-d3.selectAll('circle').data(clickright).
-   on('click', function(d){
-       document.getElementById('righttext').innerHTML = d;
-})
+
+
+var tooltiptext=['AMC Concord is the make',
+'AMC Concord is the make',
+'AMC Pacer is the make',
+'AMC Pacer is the make',
+'AMC Spirit is the make',
+'AMC Spirit is the make',
+'Buick Century is the make',
+'Buick Century is the make',
+'Buick Electra is the make',
+'Buick Electra is the make',
+'Buick LeSabre is the make',
+'Buick LeSabre is the make',
+'Buick Opel is the make',
+'Buick Opel is the make',
+'Buick Regal is the make',
+'Buick Regal is the make',
+'Buick Riviera is the make',
+'Buick Riviera is the make',
+'Buick Skylark is the make',
+'Buick Skylark is the make',
+'Cad. Deville is the make',
+'Cad. Deville is the make',
+'Cad. Eldorado is the make',
+'Cad. Eldorado is the make',
+'Cad. Seville is the make',
+'Cad. Seville is the make',
+'Chev. Chevette is the make',
+'Chev. Chevette is the make',
+'Chev. Impala is the make',
+'Chev. Impala is the make',
+'Chev. Malibu is the make',
+'Chev. Malibu is the make',
+'Chev. Monte Carlo is the make',
+'Chev. Monte Carlo is the make',
+'Chev. Monza is the make',
+'Chev. Monza is the make',
+'Chev. Nova is the make',
+'Chev. Nova is the make',
+'Dodge Colt is the make',
+'Dodge Colt is the make',
+'Dodge Diplomat is the make',
+'Dodge Diplomat is the make',
+'Dodge Magnum is the make',
+'Dodge Magnum is the make',
+'Dodge St. Regis is the make',
+'Dodge St. Regis is the make',
+'Ford Fiesta is the make',
+'Ford Fiesta is the make',
+'Ford Mustang is the make',
+'Ford Mustang is the make',
+'Linc. Continental is the make',
+'Linc. Continental is the make',
+'Linc. Mark V is the make',
+'Linc. Mark V is the make',
+'Linc. Versailles is the make',
+'Linc. Versailles is the make',
+'Merc. Bobcat is the make',
+'Merc. Bobcat is the make',
+'Merc. Cougar is the make',
+'Merc. Cougar is the make',
+'Merc. Marquis is the make',
+'Merc. Marquis is the make',
+'Merc. Monarch is the make',
+'Merc. Monarch is the make',
+'Merc. XR-7 is the make',
+'Merc. XR-7 is the make',
+'Merc. Zephyr is the make',
+'Merc. Zephyr is the make',
+'Olds 98 is the make',
+'Olds 98 is the make',
+'Olds Cutl Supr is the make',
+'Olds Cutl Supr is the make',
+'Olds Cutlass is the make',
+'Olds Cutlass is the make',
+'Olds Delta 88 is the make',
+'Olds Delta 88 is the make',
+'Olds Omega is the make',
+'Olds Omega is the make',
+'Olds Starfire is the make',
+'Olds Starfire is the make',
+'Olds Toronado is the make',
+'Olds Toronado is the make',
+'Plym. Arrow is the make',
+'Plym. Arrow is the make',
+'Plym. Champ is the make',
+'Plym. Champ is the make',
+'Plym. Horizon is the make',
+'Plym. Horizon is the make',
+'Plym. Sapporo is the make',
+'Plym. Sapporo is the make',
+'Plym. Volare is the make',
+'Plym. Volare is the make',
+'Pont. Catalina is the make',
+'Pont. Catalina is the make',
+'Pont. Firebird is the make',
+'Pont. Firebird is the make',
+'Pont. Grand Prix is the make',
+'Pont. Grand Prix is the make',
+'Pont. Le Mans is the make',
+'Pont. Le Mans is the make',
+'Pont. Phoenix is the make',
+'Pont. Phoenix is the make',
+'Pont. Sunbird is the make',
+'Pont. Sunbird is the make',
+'Audi 5000 is the make',
+'Audi 5000 is the make',
+'Audi Fox is the make',
+'Audi Fox is the make',
+'BMW 320i is the make',
+'BMW 320i is the make',
+'Datsun 200 is the make',
+'Datsun 200 is the make',
+'Datsun 210 is the make',
+'Datsun 210 is the make',
+'Datsun 510 is the make',
+'Datsun 510 is the make',
+'Datsun 810 is the make',
+'Datsun 810 is the make',
+'Fiat Strada is the make',
+'Fiat Strada is the make',
+'Honda Accord is the make',
+'Honda Accord is the make',
+'Honda Civic is the make',
+'Honda Civic is the make',
+'Mazda GLC is the make',
+'Mazda GLC is the make',
+'Peugeot 604 is the make',
+'Peugeot 604 is the make',
+'Renault Le Car is the make',
+'Renault Le Car is the make',
+'Subaru is the make',
+'Subaru is the make',
+'Toyota Celica is the make',
+'Toyota Celica is the make',
+'Toyota Corolla is the make',
+'Toyota Corolla is the make',
+'Toyota Corona is the make',
+'Toyota Corona is the make',
+'VW Dasher is the make',
+'VW Dasher is the make',
+'VW Diesel is the make',
+'VW Diesel is the make',
+'VW Rabbit is the make',
+'VW Rabbit is the make',
+'VW Scirocco is the make',
+'VW Scirocco is the make',
+'Volvo 260 is the make',
+'Volvo 260 is the make'];
+
+var statadata = [
+  {clickright:'ABC megacar', tooltiptext:'$123, 14mpg'},
+  {clickright:'ABC megacar', tooltiptext:'$123, 14mpg'},
+  {clickright:'XYZ banger', tooltiptext:'$8, 99mpg'},
+  {clickright:'XYZ banger', tooltiptext:'$8, 99mpg'}
+];
+
+d3.selectAll('circle.markercircle').data(statadata)
+    .on('click', function(d){
+       document.getElementById('righttext').innerHTML = d.clickright;
+    })
+    .on('mouseover', function(d) {
+      tttext = d.tooltiptext;
+      var xPos=parseFloat(d3.select(this).attr('cx'))-500;
+      var yPos=parseFloat(d3.select(this).attr('cy'))-200;
+      inactivestroke = d3.select(this).style('stroke');
+      inactivefill = d3.select(this).style('fill');
+      d3.select(this).classed('activetooltip',true)
+        .style('fill','#64ec23').style('stroke','#64ec23');
+      d3.select(this)
+        .append('title')
+        .text(d.tooltiptext);
+    })
+    .on('mouseout', function() {
+      d3.select(this).classed('activetooltip',false)
+        .style('fill',inactivefill).style('stroke',inactivestroke);
+    });
 
 function markercircle0fun() {
   d3.selectAll('circle.markercircle').attr('stroke-opacity','0.2').attr('fill-opacity','0.2');
