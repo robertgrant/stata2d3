@@ -16,7 +16,7 @@ syntax anything [, HTMLFile(string) ///
 args svgfile
 
 
-//	open svg file
+// open svg file
 tempname fi
 tempname fo
 file open `fi' using `"`svgfile'"', read text
@@ -150,10 +150,3 @@ file write `fo' "</body>"
 file write `fo' "</html>"
 
 end
-
-
-/* example run
-clear
-sysuse auto
-cd "~/git/stata2d3"
-d3_html "autotagged.svg", htmlfile("d3_html_test.html") svgv(16) clickright(make) groupbuttons(foreign)
