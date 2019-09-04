@@ -328,9 +328,3 @@ return local graphregionx "`returngrx'"
 return local graphregiony "`returngry'"
 
 end
-
-/* example run
-sysuse auto, clear
-scatter price mpg, scheme(s1mono)
-graph export "auto.svg", replace
-d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
