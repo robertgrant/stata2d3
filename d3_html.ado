@@ -1,6 +1,7 @@
+*! Rob Grant, Tim Morris | 30aug2019
 
-capture program drop d3_html
 program define d3_html
+version 14
 syntax anything [, HTMLFile(string) ///
 				   CLICKBelow(varname) ///
 				   CLICKRight(varname) ///
@@ -14,7 +15,7 @@ syntax anything [, HTMLFile(string) ///
 args svgfile
 
 
-//	open svg file
+// open svg file
 tempname fi
 tempname fo
 file open `fi' using `"`svgfile'"', read text
@@ -163,7 +164,7 @@ if "`clickbelow'"!="" | "`hoverbelow'"!="" | "`clickright'"!="" | "`hoverright'"
    ##########  exotic HTML as an option. */
 	if "`hovertip'"!="" {
 		file write `fo' "   .on('mouseover', function(d) {" _n
-		// xPos and yPos will be used for exotic HTML & rect+text 
+		// xPos and yPos will be used for exotic HTML & rect+text
 		file write `fo' "      var xPos=parseFloat(d3.select(this).attr('cx'));" _n
 		file write `fo' "      var yPos=parseFloat(d3.select(this).attr('cy'))-100;" _n
 		file write `fo' "      inactivestroke = d3.select(this).style('stroke');" _n
@@ -182,7 +183,6 @@ if "`clickbelow'"!="" | "`hoverbelow'"!="" | "`clickright'"!="" | "`hoverright'"
 	file write `fo' ";" _n _n
 }
 
-
 // add button functions
 if "`groupbuttons'"!="" {
 	foreach gn of local group_numbers {
@@ -196,30 +196,10 @@ if "`groupbuttons'"!="" {
 	file write `fo' "}" _n _n
 }
 
-
-
 file write `fo' "</script>" _n
-
-
-
 
 // finish the HTML file
 file write `fo' "</body>"
 file write `fo' "</html>"
+
 end
-
-
-
-
-
-
-// example run
-clear
-sysuse auto
-gen hoverfacts = strofreal(mpg) + " MPG, $" + strofreal(price)
-cd "~/git/stata2d3"
-scatter price mpg, scheme(s1mono)
-graph export "auto.svg", replace
-d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
-d3_html "autotagged.svg", htmlfile("d3_html_test.html") svgv(16) locald3 ///
-  clickright(make) hovertip(hoverfacts) groupbuttons(foreign) replace

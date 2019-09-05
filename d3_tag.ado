@@ -1,3 +1,5 @@
+*! Rob Grant, Tim Morris | 30aug2019
+
 // parse and tag Stata SVG files
 
 /* To do:
@@ -29,10 +31,8 @@
 	§ means not in version 14
 */
 	
-
-
-capture program drop d3_tag
 program define d3_tag, rclass
+version 14
 syntax anything [, Outputfile(string) MGroups(varname numeric) LGroups(varname numeric) Replace]
 args inputfile
 
@@ -328,14 +328,3 @@ return local graphregionx "`returngrx'"
 return local graphregiony "`returngry'"
 
 end
-
-
-
-
-
-// example run
-sysuse auto, clear
-scatter price mpg, scheme(s1mono)
-graph export "auto.svg", replace
-d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
-
