@@ -9,7 +9,9 @@ This is a collection of Stata commands that allow you to export your Stata graph
 For example:
 ```
 sysuse auto, clear
-d3, clickright(make) mgroups(foreign) htmlfile("d3_html_test.html"): scatter price mpg, scheme(s1mono)
+d3, clickright(make) hovertip(hoverfacts) mgroups(foreign) ///
+    htmlfile("d3_html_test.html") locald3 replace: ///
+    scatter price mpg, scheme(s1mono)
 ```
 When you click on a marker, the content of the "make" variable will appear to the right of the graph. There will also be buttons underneath for "Foreign", "Domestic" (the two levels of the "foreign" variable) and "all data", which highlight markers in that group. You can view the sort of file this produces in the file d3_html_test.html in this repo.
 
