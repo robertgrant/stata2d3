@@ -21,36 +21,36 @@ end
 program define d3_make
     version 15
     syntax [ anything ] /// D3 options below tbc
-        , SAVing(string) ///
+        , HTMLfile(string) ///
         [ ///
-        savesvg(string) ///
+		SVGfile(string) /// where Stata saves the exported SVG (untagged) file
+		TAGgedsvgfile(string) /// where d3_tag saves the tagged SVG file
+        KEEPfiles /// if keepfiles, then svgfile and taggedsvgfile are NOT deleted
         CLICKBelow(varname) /// show content of varname below on click
         CLICKRight(varname) /// show content of varname to the right on click
-        CLICKPopup(varname) /// show content of varname in a popup (tooltip) on click
+        CLICKTip(varname) /// show content of varname in a popup (tooltip) on click - not used at present
         HOVERBelow(varname) /// show content of varname below on hover
         HOVERRight(varname) /// show content of varname to the right on hover
-        HOVERPopup(varname) /// show content of varname in a popup (tooltip) on hover
-        CLICKHighlight(varname numeric) /// highlight all markers/paths in the same group, defined by varname and shown using its labels
-        HOVERHighlight(varname numeric) /// highlight all markers/paths in the same group, defined by varname and shown using its labels
-        D3LIBrary(string) ///
-        local(string) ///
-        /// highlighting variable is passed to Groups in -svgtag-
+        HOVERTip(varname) /// show content of varname in a popup (tooltip) on hover
+        MGroups(varname numeric) /// buttons to highlight all markers in the same group, defined by varname and shown using its labels
+        LGroups(varname numeric) /// highlight all paths in the same group, defined by varname and shown using its labels - not used at present
+        REPlace /// this applies to svgfile, taggedsvgfile, and htmlfile. We could split them up...
+        LOCald3 /// point to d3.v3.min.js; otherwsie, point to https://d3js.org/d3.v3.min.js
         ]
 
-    * Saving of .html file
-    tokenize `"`saving'"', parse(",")
-    if "`3'" != "replace" capture confirm file `"`1'"'
-    if "`3'" != "replace" & _rc != 601 {
-        display as error "File `"`1'"' already exists." // Please specify saving(`"`1'"', replace) to replace it"
+    // Check htmlfile
+    tokenize `"`htmlfile'"', parse(",")
+    if "`replace'" != "replace" capture confirm file `"`1'"'
+    if "`replace'" != "replace" & _rc != 601 {
+        display as error "File `"`1'"' already exists. Use the replace option or a different name." 
         exit 602
     }
-    else {
-        local savename `1' // `savename' will be the .html file to save
-    }
 
-    * Saving of .svg file; either for creation of .html or to have standalone
-    if "`savesvg'" == "" {
-        tempfile svgfile
+    // keepfiles requires names for svgfile and taggedsvgfile; otherwise, they get tempfiles
+    if "`keepfiles'" == "keepfiles" {
+		if `"`svgfile'"'
+		tempname svgfile
+        tempfile `svgfile'
         quietly graph export `"`svgfile'"', as(svg)
     }
     else {

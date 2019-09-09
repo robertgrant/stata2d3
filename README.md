@@ -9,6 +9,7 @@ This is a collection of Stata commands that allow you to export your Stata graph
 For example:
 ```
 sysuse auto, clear
+gen hoverfacts = strofreal(mpg) + " MPG, $" + strofreal(price)
 d3, clickright(make) hovertip(hoverfacts) mgroups(foreign) ///
     htmlfile("d3_html_test.html") locald3 replace: ///
     scatter price mpg, scheme(s1mono)
