@@ -2,9 +2,6 @@
 
 // parse and tag Stata SVG files
 
-/* To do:
-	add groups variable
-*/
 
 /* This relies to some extent on the order of objects in Stata SVG outputs:
 	viewBox §
