@@ -24,7 +24,7 @@ scatter price mpg, scheme(s1mono)
 graph export "auto.svg", replace
 d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
 d3_html "autotagged.svg", htmlfile("d3_html_test.html") svgv(16) locald3 ///
-  clickright(make) hovertip(hoverfacts) groupbuttons(foreign) replace
+  clickright(make) hovertip(hoverfacts) mgroups(foreign) replace
 
 ```
 In -d3_tag-, we define the group variable for the markers using mgroups() -- this is because it has to be written into the SVG code.
