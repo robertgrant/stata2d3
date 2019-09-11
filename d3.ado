@@ -1,4 +1,4 @@
-*! version 0.3, 09sep2019 | Rob Grant & Tim Morris
+*! version 0.3.1, 11sep2019 | Rob Grant & Tim Morris
 * r(100); "Rob" is deprecated.
 
 program define d3
@@ -18,6 +18,7 @@ program define d3
 	local replaceoption = r(replaceoption)
 	local taggedsvgfile = r(taggedsvgfileoption)
 	local htmlfile = r(htmlfileoption)
+	// get varnames, some of which may be absent
 	local clickbelow = r(clickbelowoption)
 	local clickright = r(clickrightoption)
 	local clicktip = r(clicktipoption)
@@ -26,14 +27,23 @@ program define d3
 	local hovertip = r(hovertipoption)
 	local mgroups = r(mgroupsoption)
 	local lgroups = r(lgroupsoption)
+	// turn these into options (or blank)
+	foreach opt in clickbelow clickright clicktip hoverbelow hoverright hovertip mgroups lgroups {
+		if "``opt''"=="" | "``opt''"=="." {
+			local `opt' = ""
+		}
+		else {
+			local `opt' = "`opt'(``opt'')"
+		}
+	}
 	
 	// Call d3_tag
-	d3_tag `"`svgfile'"', outputfile(`"`taggedsvgfile'"') mgroups(`mgroups') lgroups(`lgroups') `replaceoption'
+	d3_tag `"`svgfile'"', outputfile(`"`taggedsvgfile'"') `mgroups' `lgroups' `replaceoption'
 	
 	// Call d3_html
-	d3_html `"`taggedsvgfile'"', htmlfile(`"`htmlfile'"') clickbelow(`clickbelow') clickright(`clickright') ///
-	                             hoverbelow(`hoverbelow') hoverright(`hoverright') hovertip(`hovertip') ///
-								 groupbuttons(`mgroups') `locald3' svgversion(`svgversion') `replaceoption'
+	d3_html `"`taggedsvgfile'"', htmlfile(`"`htmlfile'"')  ///
+	                             `clickbelow' `clickright' `clicktip' `hoverbelow' `hoverright' `hovertip' ///
+								 `mgroups' `locald3' svgversion(`svgversion') `replaceoption'
 
 end
 

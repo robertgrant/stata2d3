@@ -1,14 +1,16 @@
-*! Rob Grant, Tim Morris | 30aug2019
+*! Rob Grant, Tim Morris | 11sep2019
 
 program define d3_html
 version 14
 syntax anything [, HTMLFile(string) ///
 				   CLICKBelow(varname) ///
 				   CLICKRight(varname) ///
+				   CLICKTip(varname) ///
 				   HOVERBelow(varname) ///
 				   HOVERRight(varname) ///
 				   HOVERTip(varname) ///
-				   GROUPButtons(varname numeric) ///
+				   MGroups(varname numeric) ///
+				   LGroups(varname numeric) ///
 				   LOcald3 ///
 				   SVGVersion(integer 15) ///
 				   Replace]
@@ -68,11 +70,11 @@ while r(eof)==0 {
 // write text under, right and buttons
 file write `fo' "<p id='righttext'>&nbsp;</p>" _n
 file write `fo' "<p id='undertext'>&nbsp;</p>" _n
-if "`groupbuttons'"!="" {
-	qui levelsof `groupbuttons', local(group_numbers)
+if "`mgroups'"!="" {
+	qui levelsof `mgroups', local(group_numbers)
 	//local n_groups=r(r)
 	foreach gn of local group_numbers {
-		local group_label_`gn': label (`groupbuttons') `gn'
+		local group_label_`gn': label (`mgroups') `gn'
 		file write `fo' "<button type='button' name='markercircle`gn'button' onclick='markercircle`gn'fun();'>`group_label_`gn''</button>" _n
 	}
 	file write `fo' "<button type='button' name='markercircleallbutton' onclick='markercircleallfun();'>All data</button>" _n
@@ -184,7 +186,7 @@ if "`clickbelow'"!="" | "`hoverbelow'"!="" | "`clickright'"!="" | "`hoverright'"
 }
 
 // add button functions
-if "`groupbuttons'"!="" {
+if "`mgroups'"!="" {
 	foreach gn of local group_numbers {
 		file write `fo' "function markercircle`gn'fun() {" _n
 		file write `fo'	"  d3.selectAll('circle.markercircle').attr('stroke-opacity','0.2').attr('fill-opacity','0.2');" _n
