@@ -20,7 +20,7 @@ scatter price mpg, scheme(s1mono)
 graph export "auto.svg", replace
 d3_tag "auto.svg", mgroups(foreign) out("autotagged.svg") replace
 d3_html "autotagged.svg", htmlfile("d3_html_test.html") svgv(16) locald3 ///
-  clickright(make) hovertip(hoverfacts) groupbuttons(foreign) replace
+  clickright(make) hovertip(hoverfacts) mgroups(foreign) replace
 
 
 d3, clickright(make) hovertip(hoverfacts) mgroups(foreign) ///

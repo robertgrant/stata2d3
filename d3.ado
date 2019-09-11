@@ -38,10 +38,10 @@ program define d3
 	}
 	
 	// Call d3_tag
-	d3_tag `"`svgfile'"', outputfile(`"`taggedsvgfile'"') `mgroups' `lgroups' `replaceoption'
+	d3_tag `"${svgfile}"', outputfile(`"${taggedsvgfile}"') `mgroups' `lgroups' `replaceoption'
 	
 	// Call d3_html
-	d3_html `"`taggedsvgfile'"', htmlfile(`"`htmlfile'"')  ///
+	d3_html `"${taggedsvgfile}"', htmlfile(`"`htmlfile'"')  ///
 	                             `clickbelow' `clickright' `clicktip' `hoverbelow' `hoverright' `hovertip' ///
 								 `mgroups' `locald3' svgversion(`svgversion') `replaceoption'
 
@@ -84,6 +84,9 @@ program define d3_make, rclass
 				display as error `"File `"`svgfile'"' already exists. Use the replace option or a different name."' 
 				exit 602
 			}
+			else {
+				global svgfile `"`svgfile'"'
+			}
 		}
 		else {
 			display as error "svgfile must be specified if you use the keepfiles option."
@@ -95,6 +98,9 @@ program define d3_make, rclass
 				display as error `"File `"`taggedsvgfile'"' already exists. Use the replace option or a different name."' 
 				exit 602
 			}
+			else {
+				global svgfile `"`taggedsvgfile'"'
+			}
 		}
 		else {
 			display as error "taggedsvgfile must be specified if you use the keepfiles option."
@@ -103,8 +109,12 @@ program define d3_make, rclass
     }
 	else {
 		tempfile svgfile
+		global svgfile `"`svgfile'"'
 		tempfile taggedsvgfile
+		global taggedsvgfile `"`taggedsvgfile'"'
 	}
+	/* Note that, if keepfiles is not specified, it doesn't matter what is in svgfile or taggedsvgfile.
+	   The interim files will go to tempfiles and be deleted when the Stata session closes. */
 	
 	// save the graph as the svgfile
 	quietly graph export `svgfile', as(svg) `replace'

@@ -36,16 +36,17 @@ args inputfile
 
 //arguments:
 if `"`inputfile'"'=="" {
-	dis as error "svgtag error: You must specify an input file"
+	dis as error "d3_tag error: You must specify an input file"
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="" {
-	dis as error "svgtag error: You must specify an output filename and/or the replace option"
+	dis as error "d3_tag error: You must specify an output filename and/or the replace option"
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="replace" {
 	tempfile tempout
 	local outputfile `"`tempout'"'
+	global taggedsvgfile `"`tempout'"' // persistent name to pass to d3_html
 }
 
 // check the inputfile exists
@@ -54,7 +55,7 @@ confirm file `"`inputfile'"'
 // error if outputfile exists and no Replace
 capture confirm file `"`outputfile'"'
 if !_rc & "`replace'"=="" {
-	dis as error "outputfile already exists; choose another filename or specify Replace"
+	dis as error "d3_tag error: outputfile already exists; choose another filename or specify replace"
 	error 100
 }
 
