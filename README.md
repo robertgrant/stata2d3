@@ -1,7 +1,7 @@
 Stata2D3
 ================
 
-*The master branch of this repo is work in progress over summer 2019. We presented it at Stata's London conference in September. Before [the devil spits on your brambles](https://www.nationalgeographic.com/people-and-culture/food/the-plate/2015/09/28/michaelmas-the-day-the-devil-spit-on-your-blackberries/), we will have the various parts all up and running and talking to each other. Until then, you are advised not to rely on it to work in any way whatsoever!*
+*The master branch of this repo is work in progress. We presented it at Stata's London conference in September 2019. You are advised not to rely on it to work in any way whatsoever (for now)!*
 
 ## Overview
 

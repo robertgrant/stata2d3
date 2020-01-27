@@ -1,4 +1,4 @@
-*! Rob Grant, Tim Morris | 30aug2019
+                                                               *! Rob Grant, Tim Morris | 30aug2019
 
 // parse and tag Stata SVG files
 
@@ -44,9 +44,9 @@ if `"`outputfile'"'=="" & "`replace'"=="" {
 	error 100
 }
 if `"`outputfile'"'=="" & "`replace'"=="replace" {
-	tempfile tempout
-	local outputfile `"`tempout'"'
-	global taggedsvgfile `"`tempout'"' // persistent name to pass to d3_html
+	tempname tempout
+	local outputfile `"`tempout'.svg"'
+	global taggedsvgfile `"`outputfile'"' // persistent name to pass to d3_html
 }
 
 // check the inputfile exists

@@ -24,5 +24,6 @@ d3_html "autotagged.svg", htmlfile("d3_html_test.html") svgv(16) locald3 ///
 
 
 d3, clickright(make) hovertip(hoverfacts) mgroups(foreign) ///
-    htmlfile("d3_html_test2.html") locald3 replace: ///
+    svgfile("auto2.svg") taggedsvgfile("autotagged2.svg") ///
+	htmlfile("d3_html_test2.html") locald3 replace: ///
     scatter price mpg, scheme(s1mono)

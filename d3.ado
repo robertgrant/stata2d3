@@ -1,5 +1,5 @@
-*! version 0.3.1, 11sep2019 | Rob Grant & Tim Morris
-* r(100); "Rob" is deprecated.
+*! version 0.3.2, 27jan2020 | RL Grant, TP Morris
+
 
 program define d3
 	local svgversion = c(version)
@@ -27,6 +27,7 @@ program define d3
 	local hovertip = r(hovertipoption)
 	local mgroups = r(mgroupsoption)
 	local lgroups = r(lgroupsoption)
+	local keepfiles = r(keepfilesoption)
 	// turn these into options (or blank)
 	foreach opt in clickbelow clickright clicktip hoverbelow hoverright hovertip mgroups lgroups {
 		if "``opt''"=="" | "``opt''"=="." {
@@ -45,6 +46,10 @@ program define d3
 	                             `clickbelow' `clickright' `clicktip' `hoverbelow' `hoverright' `hovertip' ///
 								 `mgroups' `locald3' svgversion(`svgversion') `replaceoption'
 
+	if "`keepfiles'"!="keepfiles" { 
+		erase `"${svgfile}"'
+		erase `"${taggedsvgfile}"'
+	}
 end
 
 
@@ -76,7 +81,7 @@ program define d3_make, rclass
         exit 602
     }
 
-    // keepfiles requires names for svgfile and taggedsvgfile; otherwise, they get tempfiles
+    // keepfiles requires names for svgfile and taggedsvgfile; otherwise, they get tempname names
     if "`keepfiles'" == "keepfiles" {
 		if `"`svgfile'"'!="" {
 			capture confirm file `"`svgfile'"'
@@ -99,7 +104,7 @@ program define d3_make, rclass
 				exit 602
 			}
 			else {
-				global svgfile `"`taggedsvgfile'"'
+				global taggedsvgfile `"`taggedsvgfile'"'
 			}
 		}
 		else {
@@ -108,13 +113,39 @@ program define d3_make, rclass
 		}
     }
 	else {
-		tempfile svgfile
-		global svgfile `"`svgfile'"'
-		tempfile taggedsvgfile
-		global taggedsvgfile `"`taggedsvgfile'"'
+		if `"`svgfile'"'!="" {
+			capture confirm file `"`svgfile'"'
+			if _rc != 601 & "`replace'"!="replace" {
+				display as error `"File `"`svgfile'"' already exists. Use the replace option or a different name."' 
+				exit 602
+			}
+			else {
+				global svgfile `"`svgfile'"'
+			}
+		}
+		else {
+			tempname svgfile
+			global svgfile `"`svgfile'.svg"'
+		}
+		if `"`taggedsvgfile'"'!="" {
+			capture confirm file `"`taggedsvgfile'"'
+			if _rc != 601 & "`replace'"!="replace" {
+				display as error `"File `"`taggedsvgfile'"' already exists. Use the replace option or a different name."' 
+				exit 602
+			}
+			else {
+				global taggedsvgfile `"`taggedsvgfile'"'
+			}
+		}
+		else {
+			tempname taggedsvgfile
+			global taggedsvgfile `"`taggedsvgfile'.svg"'
+		}
 	}
-	/* Note that, if keepfiles is not specified, it doesn't matter what is in svgfile or taggedsvgfile.
-	   The interim files will go to tempfiles and be deleted when the Stata session closes. */
+	/* Note that, if svgfile or taggedsvgfile are not specified, the interim 
+	   files will be saved in files with tempnames (not tempfiles, because they 
+	   must be passed between Stata programs) in the working directory, and 
+	   deleted when -d3- finishes. */
 	
 	// save the graph as the svgfile
 	quietly graph export `svgfile', as(svg) `replace'
@@ -139,6 +170,7 @@ program define d3_make, rclass
 	return local hovertipoption = "`hovertip'"
 	return local mgroupsoption = "`mgroups'"
 	return local lgroupsoption = "`lgroups'"
+	return local keepfilesoption = "`keepfiles'"
 	
 end
 
@@ -146,8 +178,10 @@ end
 exit
 * * * *
 
-
+/*
 History of d3.ado
-0.3  09sep2019 | Options matched to d3_tag and d3_html
-0.2  27aug2019 | Better structure and additional options following comments; debugging
-0.1  12aug2019 | First attempt at syntax for d3 command
+0.3.2  27jan2020 | d3_* commands integrated by passing globals and tempname files
+0.3.1  09sep2019 | Options matched to d3_tag and d3_html
+0.2    27aug2019 | Better structure and additional options following comments; debugging
+0.1    12aug2019 | First attempt at syntax for d3 command
+*/
