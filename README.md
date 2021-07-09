@@ -1,3 +1,13 @@
+## Note! I no longer use Github. This repo may be out of date.
+
+All my ex-Github repos are now stored and maintained at [my personal website](http://www.robertgrantstats.co.uk/code.html).
+
+Why did I leave Github? Because I consider the compulsory imposition of 2-factor authentication to be inappropriate for people writing software, including cryptography, which can attract severe punishments in certain jurisdictions. We all know that the organisations that hold the 2nd factors (mobile telephony providers, tech companies) are compromised, willingly or otherwise, in their relationships with security agencies, benign or otherwise.
+
+Why not just close it down? Because you might use it programmatically, via http or API, and I don't want to hurt you (by breaking your code) while trying to help you (by raising issues of privacy and confidentiality).
+
+
+
 Stata2D3
 ================
 
@@ -46,7 +56,7 @@ At present, d3 does not pass all options forward to the subsidiary commands. Onl
 
 ### d3_tag
 
-**d3_tag** takes an SVG graph file exported by Stata, scans it for objects ike the plot region, axes, axis titles, gridlines, circles and lines inside the plotregion, and so on. Once it has found those, it adds *ids* and *classes* (which we collectively call "tags" here, much to the horror of full-stack rockstar web devz), which help D3 keep track of what's going on, and what it can change or interact with inside the SVG.
+**d3_tag** takes an SVG graph file exported by Stata, scans it for objects like the plotregion, axes, axis titles, gridlines, circles and lines inside the plotregion, and so on. Once it has found those, it adds *ids* and *classes* (which we collectively call "tags" here, much to the horror of full-stack rockstar web devz), which help D3 keep track of what's going on, and what it can change or interact with inside the SVG.
 It can only work with SVG exported by Stata because those files follow a clearly specified structure, and **d3_tag** uses that structure to find its way around; you can't feed files from other software into it, nor can you amend your Stata SVG in Inkscape or Illustrator, and then plug it into **d3_tag**.
 
 * **d3_tag** *filename*, Outputfile(*filename*) MGroups(*varname numeric*) LGroups(*varname numeric*) Replace
